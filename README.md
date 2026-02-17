@@ -1,2 +1,2 @@
-# Haribulbul-AdilMammadov
-FlexiFit-Yapay zeka destekli kisisel antrenor ve beslenme asistani
+# Xaribulbul-AdilMammadov
+FlexiFit-Yapay zeka destekli beslenme asistani
