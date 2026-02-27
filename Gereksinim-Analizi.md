@@ -1,5 +1,5 @@
 # FlexiFit Pro - API Tasarımı
-> **Görev Dağılımı Notu:** Bu proje tek kişilik bir ekip tarafından yürütüldüğü için, aşağıda numaralandırılmış olan tüm gereksinimlerin (15 adet) tasarımı, API geliştirme süreçleri ve testleri **Adil Mammadov**'a atanmıştır.
+> **Görev Dağılımı Notu:** Bu proje tek kişilik bir ekip tarafından yürütüldüğü için, aşağıda numaralandırılmış olan tüm gereksinimlerin tasarımı, API geliştirme süreçleri ve testleri **Adil Mammadov**'a atanmıştır.
 1. **Kayıt Olma**
    * **API Metodu:** `POST /auth/register`
    * **Açıklama:** Uygulamayı kullanacak kişilerin yaş, boy, kilo ve cinsiyet verilerini sisteme kaydederek yeni bir hesap oluşturmasını sağlar. Kişisel bilgilerin toplanmasını ve veritabanına işlenmesini içerir.
