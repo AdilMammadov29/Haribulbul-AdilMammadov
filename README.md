@@ -1,4 +1,4 @@
-# FLEXIFIT
+# FLEXIFIT PRO
 
 > **Not:** Bu proje, T.C. Süleyman Demirel Üniversitesi Bilgisayar Mühendisliği Bölümü Yazılım Mühendisliği dersi kapsamında geliştirilmiştir.
 
