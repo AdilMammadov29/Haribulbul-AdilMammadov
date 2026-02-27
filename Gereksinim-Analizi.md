@@ -1,0 +1,16 @@
+## Fonksiyonel Gereksinim Listesi
+
+1. **Kayıt Ol (POST)
+2. **Giriş Yap (POST)
+3. **Tüketim Ekle (POST)
+4. **Özellikleri Görüntüle (GET)
+5. **Geçmişi Görüntüle (GET)
+6. **İlerleme Durumunu Görüntüle (GET)
+7. **Haftalık Çizelgeyi Görüntüle (GET)
+8. **Mevcut Kiloyu Güncelle (UPDATE)
+9. **Hareket Seviyesini Güncelle (UPDATE)
+10. **Tema Ayarını Güncelle (UPDATE)
+11. **Kaydı Sil (DELETE)
+12. **Hesabı Sil (DELETE)
+13. **Barkod Tara (GET)
+14. **Öğün Önerisi Al (GET)
