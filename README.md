@@ -6,7 +6,7 @@
 
 ## 🔗 Proje Hakkında
 
-![FlexiFit Pro Görseli](product.png)
+![FlexiFit Pro Görseli](FLEXIFIT.png)
 
 FlexiFit Pro, kullanıcıların fiziksel verilerine göre günlük kalori ve su ihtiyaçlarını hesaplayan, yapay zeka destekli ve zaman duyarlı kişisel bir beslenme asistanıdır. Amacımız, sağlıklı yaşamı teknolojiyle birleştirerek kullanıcılara özel, esnek ve akıllı bir deneyim sunmaktır.
 
