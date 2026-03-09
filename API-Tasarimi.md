@@ -1,28 +1,29 @@
 openapi: 3.0.3
 info:
-  title: TalantLoop API
+  title: FlexiFit API
   description: |
-    TalantLoop yetenek ve zaman takası (kredi) platformu için RESTful API.
+    FlexiFit Akıllı Beslenme ve Sağlık Takip Platformu için RESTful API.
 
     ## Özellikler
-    - Kullanıcı kayıt ve kimlik doğrulama
-    - Profil yönetimi
-    - İlan (Ders/Yetenek) oluşturma ve listeleme
-    - Kredi transferi ve bakiye sorgulama
-    - JWT tabanlı kimlik doğrulama
+    - Kullanıcı kayıt ve kimlik doğrulama (JWT)
+    - Günlük kalori ve su tüketimi takibi
+    - Vücut kitle indeksi (VKİ) ve kilo analizi
+    - Haftalık ilerleme grafikleri
+    - Barkod ile ürün tanıma
+    - AI destekli kişiselleştirilmiş öğün önerileri
   version: 1.0.0
   contact:
-    name: TalantLoop Support
-    email: support@talantloop.com
-    url: https://api.talantloop.com/support
+    name: Adil Mammadov
+    email: adil@flexifit.com
+    url: https://api.flexifit.com/support
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
 
 servers:
-  - url: https://api.talantloop.com/v1
+  - url: https://api.flexifit.com/v1
     description: Production server
-  - url: https://staging-api.talantloop.com/v1
+  - url: https://staging-api.flexifit.com/v1
     description: Staging server
   - url: http://localhost:3000/v1
     description: Development server
@@ -30,12 +31,18 @@ servers:
 tags:
   - name: auth
     description: Kimlik doğrulama işlemleri
+  - name: consumptions
+    description: Kalori ve su tüketimi işlemleri
+  - name: progress
+    description: İlerleme ve grafik işlemleri
   - name: users
-    description: Profil ve bakiye işlemleri
-  - name: ads
-    description: İlan yönetimi işlemleri
-  - name: transactions
-    description: Kredi transfer işlemleri
+    description: Kullanıcı profili işlemleri
+  - name: settings
+    description: Uygulama ayarları
+  - name: products
+    description: Barkod ve ürün tanıma işlemleri
+  - name: ai
+    description: Yapay zeka modülü işlemleri
 
 paths:
 
@@ -43,8 +50,8 @@ paths:
     post:
       tags:
         - auth
-      summary: Kullanıcı Kayıt Ol
-      description: Yeni bir hesap oluşturma işlemi
+      summary: Kayıt Ol
+      description: Kullanıcıların fiziksel verilerini ve hedeflerini kaydederek yeni hesap oluşturur
       operationId: registerUser
       requestBody:
         required: true
@@ -54,15 +61,18 @@ paths:
               $ref: '#/components/schemas/UserRegistration'
             examples:
               example1:
-                summary: Örnek kayıt
+                summary: Örnek kullanıcı kaydı
                 value:
                   fullName: Adil Mammadov
                   email: adil@example.com
-                  password: Password123!
-                  skills: ["Python", "Matematik"]
+                  password: SecurePassword123!
+                  height: 186
+                  weight: 96
+                  goalWeight: 85
+                  activityLevel: "1.55"
       responses:
         '201':
-          description: Hesap başarıyla oluşturuldu
+          description: Kullanıcı başarıyla oluşturuldu
           content:
             application/json:
               schema:
@@ -71,13 +81,17 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '409':
           description: Email adresi zaten kullanımda
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /auth/login:
     post:
       tags:
         - auth
-      summary: Kullanıcı Giriş Yap
-      description: Sisteme erişim yetkisi alma ve JWT token üretimi
+      summary: Giriş Yap
+      description: Kullanıcının sisteme kimlik doğrulaması yaparak JWT token almasını sağlar
       operationId: loginUser
       requestBody:
         required: true
@@ -90,7 +104,7 @@ paths:
                 summary: Örnek giriş
                 value:
                   email: adil@example.com
-                  password: Password123!
+                  password: SecurePassword123!
       responses:
         '200':
           description: Giriş başarılı
@@ -98,16 +112,102 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuthToken'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
 
+  /consumptions:
+    post:
+      tags:
+        - consumptions
+      summary: Tüketim Ekle
+      description: Tüketilen gıdaların kalori değerini veya içilen su miktarını sisteme ekler
+      operationId: addConsumption
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConsumptionCreate'
+            examples:
+              example1:
+                summary: Su tüketimi ekleme
+                value:
+                  type: water
+                  amount: 0.25
+              example2:
+                summary: Kalori ekleme
+                value:
+                  type: food
+                  name: Izgara Tavuk
+                  amount: 350
+      responses:
+        '201':
+          description: Tüketim başarıyla eklendi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Consumption'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /consumptions/history:
+    get:
+      tags:
+        - consumptions
+      summary: Geçmişi Görüntüle
+      description: Sisteme eklenen tüm yiyecek ve su kayıtlarının listesini getirir
+      operationId: getConsumptionHistory
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Geçmiş listesi başarıyla getirildi
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Consumption'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /consumptions/{consumptionId}:
+    delete:
+      tags:
+        - consumptions
+      summary: Kaydı Sil
+      description: Yanlışlıkla eklenen bir kalori veya su kaydını sistemden kaldırır
+      operationId: deleteConsumption
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: consumptionId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Silinecek kaydın ID'si
+      responses:
+        '204':
+          description: Kayıt başarıyla silindi
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /users/{userId}:
-    put:
+    get:
       tags:
         - users
-      summary: Profil Bilgilerini Güncelle
-      description: Kullanıcı adı veya yetkinlik güncelleme
-      operationId: updateUser
+      summary: Özellikleri Görüntüle
+      description: Kullanıcının profil bilgilerini (boy, kilo, hedefler) getirir
+      operationId: getUserProfile
       security:
         - BearerAuth: []
       parameters:
@@ -116,27 +216,23 @@ paths:
           required: true
           schema:
             type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserUpdate'
       responses:
         '200':
-          description: Profil başarıyla güncellendi
+          description: Kullanıcı profili başarıyla getirildi
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
     delete:
       tags:
         - users
-      summary: Profilini Sil
-      description: Üyeliği sonlandırma ve hesabı kaldırma
+      summary: Hesabı Sil
+      description: Kullanıcının tüm sağlık verilerini ve profilini kalıcı olarak siler
       operationId: deleteUser
       security:
         - BearerAuth: []
@@ -148,17 +244,17 @@ paths:
             type: string
       responses:
         '204':
-          description: Üyelik başarıyla sonlandırıldı
+          description: Hesap kalıcı olarak silindi
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /users/{userId}/balance:
-    get:
+  /users/{userId}/weight:
+    put:
       tags:
         - users
-      summary: Bakiye Sorgula
-      description: Kullanıcının kaç kredisi kaldığını görüntüleme
-      operationId: getBalance
+      summary: Mevcut Kiloyu Güncelle
+      description: Kullanıcının güncel kilo bilgisini değiştirir ve hedefleri yeniden hesaplar
+      operationId: updateWeight
       security:
         - BearerAuth: []
       parameters:
@@ -167,142 +263,172 @@ paths:
           required: true
           schema:
             type: string
-      responses:
-        '200':
-          description: Bakiye başarıyla getirildi
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BalanceResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-
-  /ads:
-    post:
-      tags:
-        - ads
-      summary: Yeni İlan Oluştur
-      description: '"1 saat ders verebilirim" gibi yeni bir yetenek ilanı açma'
-      operationId: createAd
-      security:
-        - BearerAuth: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AdCreate'
-            examples:
-              example1:
-                summary: Örnek ilan
-                value:
-                  title: "1 saat Python dersi verebilirim"
-                  description: "Sıfırdan temel seviye Python eğitimi"
-                  creditCost: 1
-      responses:
-        '201':
-          description: İlan başarıyla oluşturuldu
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Ad'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-
-    get:
-      tags:
-        - ads
-      summary: İlanları Listele
-      description: Mevcut tüm ilanları ana sayfada görme
-      operationId: getAds
+              type: object
+              properties:
+                newWeight:
+                  type: number
+                  example: 94.5
       responses:
         '200':
-          description: İlan listesi başarıyla getirildi
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Ad'
-
-  /ads/{adId}:
-    put:
-      tags:
-        - ads
-      summary: İlan Güncelle
-      description: Açılan ilanın açıklamasını veya detaylarını değiştirme
-      operationId: updateAd
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: adId
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AdUpdate'
-      responses:
-        '200':
-          description: İlan başarıyla güncellendi
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Ad'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-
-    delete:
-      tags:
-        - ads
-      summary: İlan Sil
-      description: Verilen ilanı sistemden kaldırma
-      operationId: deleteAd
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: adId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '204':
-          description: İlan başarıyla silindi
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-
-  /transactions/transfer:
-    post:
-      tags:
-        - transactions
-      summary: Kredi Transferi Yap
-      description: İşlem bittiğinde 1 krediyi birinden diğerine aktarma
-      operationId: transferCredit
-      security:
-        - BearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TransferRequest'
-            examples:
-              example1:
-                summary: Örnek transfer
-                value:
-                  senderId: "user_123"
-                  receiverId: "user_456"
-                  amount: 1
-      responses:
-        '200':
-          description: Transfer işlemi başarıyla gerçekleşti
+          description: Kilo başarıyla güncellendi
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /users/{userId}/activity-level:
+    put:
+      tags:
+        - users
+      summary: Hareket Seviyesini Güncelle
+      description: Kullanıcının günlük aktivite çarpanını günceller
+      operationId: updateActivityLevel
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                activityLevel:
+                  type: string
+                  enum: ["1.2", "1.55", "1.725"]
+                  example: "1.725"
+      responses:
+        '200':
+          description: Aktivite seviyesi güncellendi
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /settings/{userId}/theme:
+    put:
+      tags:
+        - settings
+      summary: Tema Ayarını Güncelle
+      description: Uygulama arayüzünü Light veya Dark mode olarak değiştirir
+      operationId: updateTheme
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                theme:
+                  type: string
+                  enum: [light, dark]
+                  example: dark
+      responses:
+        '200':
+          description: Tema başarıyla güncellendi
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /progress/weight:
+    get:
+      tags:
+        - progress
+      summary: İlerleme Durumu
+      description: Kullanıcının başlangıç, mevcut ve hedef kilosunu karşılaştırmalı olarak getirir
+      operationId: getWeightProgress
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: İlerleme verileri başarıyla getirildi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgressData'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /progress/weekly:
+    get:
+      tags:
+        - progress
+      summary: Haftalık Çizelge
+      description: Haftanın 7 günü için alınan kalori istatistiklerini getirir
+      operationId: getWeeklyChart
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Haftalık grafik verileri başarıyla getirildi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeeklyChart'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /products/barcode/{barcodeNo}:
+    get:
+      tags:
+        - products
+      summary: Barkod Tarama
+      description: Open Food Facts API'si üzerinden barkoda göre ürünün kalori değerini bulur
+      operationId: scanBarcode
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: barcodeNo
+          in: path
+          required: true
+          schema:
+            type: string
+            example: "8690504000000"
+      responses:
+        '200':
+          description: Ürün bilgileri başarıyla bulundu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResult'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /ai/recommendations/meal:
+    get:
+      tags:
+        - ai
+      summary: Öğün Önerisi Alma
+      description: Kullanıcının günlük kalan kalorisine ve makro ihtiyacına göre yapay zeka tavsiyesi üretir
+      operationId: getAIRecommendation
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Öneri başarıyla üretildi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Bugün protein eksiğin var, akşam yemeğinde ızgara tavuk ve bol salata tercih edebilirsin."
         '401':
           $ref: '#/components/responses/Unauthorized'
 
@@ -312,7 +438,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: JWT token ile kimlik doğrulama
+      description: JWT token ile güvenli kimlik doğrulama
 
   schemas:
     UserRegistration:
@@ -321,19 +447,29 @@ components:
         - fullName
         - email
         - password
+        - height
+        - weight
+        - goalWeight
       properties:
         fullName:
           type: string
+          minLength: 2
         email:
           type: string
           format: email
         password:
           type: string
           format: password
-        skills:
-          type: array
-          items:
-            type: string
+          minLength: 8
+        height:
+          type: number
+        weight:
+          type: number
+        goalWeight:
+          type: number
+        activityLevel:
+          type: string
+          enum: ["1.2", "1.55", "1.725"]
 
     LoginCredentials:
       type: object
@@ -357,23 +493,14 @@ components:
           type: string
         email:
           type: string
-        skills:
-          type: array
-          items:
-            type: string
-        credits:
+        dailyGoalKcal:
           type: integer
-          description: Mevcut yetenek takası kredisi
-
-    UserUpdate:
-      type: object
-      properties:
-        fullName:
+        theme:
           type: string
-        skills:
-          type: array
-          items:
-            type: string
+          enum: [light, dark]
+        createdAt:
+          type: string
+          format: date-time
 
     AuthToken:
       type: object
@@ -389,68 +516,73 @@ components:
         user:
           $ref: '#/components/schemas/User'
 
-    AdCreate:
+    ConsumptionCreate:
       type: object
       required:
-        - title
-        - description
-        - creditCost
+        - type
+        - amount
       properties:
-        title:
+        type:
           type: string
-        description:
+          enum: [food, water]
+        amount:
+          type: number
+          description: Kalori (kcal) veya Litre (L) cinsinden miktar
+        name:
           type: string
-        creditCost:
-          type: integer
+          description: Tüketilen yiyeceğin adı (sadece food için)
 
-    AdUpdate:
-      type: object
-      properties:
-        title:
-          type: string
-        description:
-          type: string
-
-    Ad:
+    Consumption:
       type: object
       properties:
         id:
           type: string
-        userId:
+        type:
           type: string
-        title:
+          enum: [food, water]
+        amount:
+          type: number
+        name:
           type: string
-        description:
-          type: string
-        creditCost:
-          type: integer
-        createdAt:
+        timestamp:
           type: string
           format: date-time
 
-    TransferRequest:
+    ProgressData:
       type: object
-      required:
-        - senderId
-        - receiverId
-        - amount
       properties:
-        senderId:
-          type: string
-        receiverId:
-          type: string
-        amount:
+        startWeight:
+          type: number
+        currentWeight:
+          type: number
+        goalWeight:
+          type: number
+        progressPercentage:
           type: integer
-          minimum: 1
+          minimum: 0
+          maximum: 100
 
-    BalanceResponse:
+    WeeklyChart:
       type: object
       properties:
-        userId:
+        labels:
+          type: array
+          items:
+            type: string
+            example: "Pzt"
+        datasets:
+          type: array
+          items:
+            type: integer
+            example: 2100
+
+    ProductResult:
+      type: object
+      properties:
+        productName:
           type: string
-        availableCredits:
-          type: integer
-          example: 5
+        kcalPer100g:
+          type: number
 
     Error:
       type: object
@@ -472,7 +604,7 @@ components:
             $ref: '#/components/schemas/Error'
           example:
             code: BAD_REQUEST
-            message: İstek parametreleri geçersiz veya yetersiz bakiye
+            message: İstek parametreleri geçersiz veya eksik
     Unauthorized:
       description: Kimlik doğrulama gerekli
       content:
@@ -481,4 +613,13 @@ components:
             $ref: '#/components/schemas/Error'
           example:
             code: UNAUTHORIZED
-            message: Kimlik doğrulama başarısız
+            message: Kimlik doğrulama başarısız veya token süresi doldu
+    NotFound:
+      description: Kaynak bulunamadı
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: NOT_FOUND
+            message: İstenilen kayıt veya kaynak bulunamadı
