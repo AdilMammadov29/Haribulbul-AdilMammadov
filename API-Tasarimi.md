@@ -1,3 +1,9 @@
+```yaml
+openapi: 3.0.3
+info:
+  title: FlexiFit API
+... (kodların geri kalanı) ...
+```
 openapi: 3.0.3
 info:
   title: FlexiFit API
@@ -623,3 +629,9 @@ components:
           example:
             code: NOT_FOUND
             message: İstenilen kayıt veya kaynak bulunamadı
+            ```yaml
+openapi: 3.0.3
+info:
+  title: FlexiFit API
+... (kodların geri kalanı) ...
+```
