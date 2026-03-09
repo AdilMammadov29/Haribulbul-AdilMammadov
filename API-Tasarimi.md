@@ -1,58 +1,484 @@
-# FlexiFit Pro - API Tasarımı
-> **Görev Dağılımı Notu:** Bu proje tek kişilik bir ekip tarafından yürütüldüğü için, aşağıda numaralandırılmış olan tüm gereksinimlerin tasarımı, API geliştirme süreçleri ve testleri **Adil Mammadov**'a atanmıştır.
-1. **Kayıt Olma**
-   * **API Metodu:** `POST /auth/register`
-   * **Açıklama:** Uygulamayı kullanacak kişilerin yaş, boy, kilo ve cinsiyet verilerini sisteme kaydederek yeni bir hesap oluşturmasını sağlar. Kişisel bilgilerin toplanmasını ve veritabanına işlenmesini içerir.
+openapi: 3.0.3
+info:
+  title: TalantLoop API
+  description: |
+    TalantLoop yetenek ve zaman takası (kredi) platformu için RESTful API.
 
-2. **Giriş Yapma**
-   * **API Metodu:** `POST /auth/login`
-   * **Açıklama:** Kayıtlı kişilerin sisteme kimlik doğrulaması yaparak kendi profillerine erişim sağlamasını kontrol eder. Başarılı giriş durumunda güvenlik oturumu (token) başlatılır.
+    ## Özellikler
+    - Kullanıcı kayıt ve kimlik doğrulama
+    - Profil yönetimi
+    - İlan (Ders/Yetenek) oluşturma ve listeleme
+    - Kredi transferi ve bakiye sorgulama
+    - JWT tabanlı kimlik doğrulama
+  version: 1.0.0
+  contact:
+    name: TalantLoop Support
+    email: support@talantloop.com
+    url: https://api.talantloop.com/support
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
 
-3. **Tüketim Ekleme**
-   * **API Metodu:** `POST /consumptions`
-   * **Açıklama:** Tüketilen gıdaların enerji değerini ve içilen su miktarını sisteme ekler. Güvenlik için giriş yapmış olmak gerekir ve veriler doğrudan o anki kullanıcının profiline yazılır.
+servers:
+  - url: https://api.talantloop.com/v1
+    description: Production server
+  - url: https://staging-api.talantloop.com/v1
+    description: Staging server
+  - url: http://localhost:3000/v1
+    description: Development server
 
-4. **Özellikleri Görüntüleme**
-   * **API Metodu:** `GET /users/{userId}`
-   * **Açıklama:** Kişinin sisteme kaydettiği boy, yaş ve kilo gibi fiziksel verilerini getirir. Kullanıcılar yalnızca kendi fiziksel profillerini görüntüleyebilir.
+tags:
+  - name: auth
+    description: Kimlik doğrulama işlemleri
+  - name: users
+    description: Profil ve bakiye işlemleri
+  - name: ads
+    description: İlan yönetimi işlemleri
+  - name: transactions
+    description: Kredi transfer işlemleri
 
-5. **Geçmişi Görüntüleme**
-   * **API Metodu:** `GET /consumptions/history`
-   * **Açıklama:** Sisteme daha önceden eklenen tüm yiyecek ve su kayıtlarını tarih sırasına göre liste halinde getirir. Güvenlik için yetkilendirme (token) gerektirir.
+paths:
 
-6. **İlerleme Durumunu Görüntüleme**
-   * **API Metodu:** `GET /progress/weight`
-   * **Açıklama:** Başlangıç ağırlığı ile hedef ağırlığı arasındaki sayısal farkı hesaplayarak ilerleme çubuğu verilerini getirir. 
+  /auth/register:
+    post:
+      tags:
+        - auth
+      summary: Kullanıcı Kayıt Ol
+      description: Yeni bir hesap oluşturma işlemi
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistration'
+            examples:
+              example1:
+                summary: Örnek kayıt
+                value:
+                  fullName: Adil Mammadov
+                  email: adil@example.com
+                  password: Password123!
+                  skills: ["Python", "Matematik"]
+      responses:
+        '201':
+          description: Hesap başarıyla oluşturuldu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Email adresi zaten kullanımda
 
-7. **Haftalık Çizelgeyi Görüntüleme**
-   * **API holistic:** `GET /progress/weekly`
-   * **Açıklama:** Haftanın günlerine ait tamamlanma durumlarını ve geçmiş günlerin enerji verilerini grafiksel çizim için sayısal formatta sunar.
+  /auth/login:
+    post:
+      tags:
+        - auth
+      summary: Kullanıcı Giriş Yap
+      description: Sisteme erişim yetkisi alma ve JWT token üretimi
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginCredentials'
+            examples:
+              example1:
+                summary: Örnek giriş
+                value:
+                  email: adil@example.com
+                  password: Password123!
+      responses:
+        '200':
+          description: Giriş başarılı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthToken'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
-8. **Mevcut Kiloyu Güncelleme**
-   * **API Metodu:** `PUT /users/{userId}/weight`
-   * **Açıklama:** Kişinin zamanla değişen vücut ağırlığı verisini sistemde yenisiyle değiştirmesini sağlar. Kullanıcılar yalnızca kendi verilerini güncelleyebilir.
+  /users/{userId}:
+    put:
+      tags:
+        - users
+      summary: Profil Bilgilerini Güncelle
+      description: Kullanıcı adı veya yetkinlik güncelleme
+      operationId: updateUser
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '200':
+          description: Profil başarıyla güncellendi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
-9. **Hareket Seviyesini Güncelleme**
-   * **API Metodu:** `PUT /users/{userId}/activity-level`
-   * **Açıklama:** Günlük hareketlilik durumu (aktivite seviyesi) verisini değiştirir. Yeni seviyeye göre sistemdeki kalori ihtiyacı arka planda yeniden hesaplanır.
+    delete:
+      tags:
+        - users
+      summary: Profilini Sil
+      description: Üyeliği sonlandırma ve hesabı kaldırma
+      operationId: deleteUser
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Üyelik başarıyla sonlandırıldı
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
-10. **Tema Ayarını Güncelleme**
-    * **API Metodu:** `PUT /settings/{userId}/theme`
-    * **Açıklama:** Ekran modunu (karanlık/aydınlık) değiştirmesi için kullanıcı arayüzü tercihlerini veritabanında günceller.
+  /users/{userId}/balance:
+    get:
+      tags:
+        - users
+      summary: Bakiye Sorgula
+      description: Kullanıcının kaç kredisi kaldığını görüntüleme
+      operationId: getBalance
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Bakiye başarıyla getirildi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalanceResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
-11. **Kaydı Silme**
-    * **API Metodu:** `DELETE /consumptions/{consumptionId}`
-    * **Açıklama:** Sisteme yanlışlıkla girilen belirli bir yiyecek veya su verisinin ID'sine göre bulunup veritabanından kalıcı olarak çıkarılmasını sağlar.
+  /ads:
+    post:
+      tags:
+        - ads
+      summary: Yeni İlan Oluştur
+      description: '"1 saat ders verebilirim" gibi yeni bir yetenek ilanı açma'
+      operationId: createAd
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdCreate'
+            examples:
+              example1:
+                summary: Örnek ilan
+                value:
+                  title: "1 saat Python dersi verebilirim"
+                  description: "Sıfırdan temel seviye Python eğitimi"
+                  creditCost: 1
+      responses:
+        '201':
+          description: İlan başarıyla oluşturuldu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ad'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
-12. **Hesabı Silme**
-    * **API Metodu:** `DELETE /users/{userId}`
-    * **Açıklama:** Kişinin hesabını, profil bilgilerini ve kendine ait tüm tüketim geçmişi kayıtlarını sistemden tamamen siler. Güvenlik için şifre onayı gerektirir.
+    get:
+      tags:
+        - ads
+      summary: İlanları Listele
+      description: Mevcut tüm ilanları ana sayfada görme
+      operationId: getAds
+      responses:
+        '200':
+          description: İlan listesi başarıyla getirildi
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ad'
 
-13. **Barkod Tarama**
-    * **API Metodu:** `GET /products/barcode/{barcodeNo}`
-    * **Açıklama:** Cihaz kamerasıyla okutulan gıda barkod numarasını dış veya iç veritabanında sorgular ve eşleşen ürünün besin değerlerini ekrana getirir.
+  /ads/{adId}:
+    put:
+      tags:
+        - ads
+      summary: İlan Güncelle
+      description: Açılan ilanın açıklamasını veya detaylarını değiştirme
+      operationId: updateAd
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: adId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdUpdate'
+      responses:
+        '200':
+          description: İlan başarıyla güncellendi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ad'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
-14. **Öğün Önerisi Alma (Yapay Zeka Modülü)**
-    * **API Metodu:** `GET /ai/recommendations/meal`
-    * **Açıklama:** Uygulamanın; anlık saat verisine ve o ana kadar alınan enerji miktarına göre yapay zeka algoritmasını tetikleyerek sıradaki öğün için yiyecek tavsiyesi üretmesini sağlar.
+    delete:
+      tags:
+        - ads
+      summary: İlan Sil
+      description: Verilen ilanı sistemden kaldırma
+      operationId: deleteAd
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: adId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: İlan başarıyla silindi
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
+  /transactions/transfer:
+    post:
+      tags:
+        - transactions
+      summary: Kredi Transferi Yap
+      description: İşlem bittiğinde 1 krediyi birinden diğerine aktarma
+      operationId: transferCredit
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferRequest'
+            examples:
+              example1:
+                summary: Örnek transfer
+                value:
+                  senderId: "user_123"
+                  receiverId: "user_456"
+                  amount: 1
+      responses:
+        '200':
+          description: Transfer işlemi başarıyla gerçekleşti
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token ile kimlik doğrulama
+
+  schemas:
+    UserRegistration:
+      type: object
+      required:
+        - fullName
+        - email
+        - password
+      properties:
+        fullName:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+        skills:
+          type: array
+          items:
+            type: string
+
+    LoginCredentials:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        fullName:
+          type: string
+        email:
+          type: string
+        skills:
+          type: array
+          items:
+            type: string
+        credits:
+          type: integer
+          description: Mevcut yetenek takası kredisi
+
+    UserUpdate:
+      type: object
+      properties:
+        fullName:
+          type: string
+        skills:
+          type: array
+          items:
+            type: string
+
+    AuthToken:
+      type: object
+      properties:
+        token:
+          type: string
+        tokenType:
+          type: string
+          example: Bearer
+        expiresIn:
+          type: integer
+          example: 86400
+        user:
+          $ref: '#/components/schemas/User'
+
+    AdCreate:
+      type: object
+      required:
+        - title
+        - description
+        - creditCost
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        creditCost:
+          type: integer
+
+    AdUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+
+    Ad:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        creditCost:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    TransferRequest:
+      type: object
+      required:
+        - senderId
+        - receiverId
+        - amount
+      properties:
+        senderId:
+          type: string
+        receiverId:
+          type: string
+        amount:
+          type: integer
+          minimum: 1
+
+    BalanceResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+        availableCredits:
+          type: integer
+          example: 5
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Geçersiz istek
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: BAD_REQUEST
+            message: İstek parametreleri geçersiz veya yetersiz bakiye
+    Unauthorized:
+      description: Kimlik doğrulama gerekli
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: UNAUTHORIZED
+            message: Kimlik doğrulama başarısız
