@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlexiFit - Adil Memmedov</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>FlexiFit'e Hoş Geldin</h1>
+            <p>Sisteme giriş yap veya yeni kayıt oluştur.</p>
+        </div>
+
+        <div class="form-wrapper">
+            
+            <div class="form-box">
+                <h2>Kayıt Ol</h2>
+                <form id="registerForm">
+                    <input type="text" id="regName" placeholder="Ad Soyad" required>
+                    <input type="email" id="regEmail" placeholder="E-posta Adresi" required>
+                    <input type="password" id="regPassword" placeholder="Şifre" required>
+                    <input type="number" id="regHeight" placeholder="Boy (cm)" required>
+                    <input type="number" id="regWeight" placeholder="Kilo (kg)" required>
+                    <button type="submit">Kayıt Ol</button>
+                </form>
+                <div id="regMessage" class="message"></div>
+            </div>
+
+            <div class="form-box">
+                <h2>Giriş Yap</h2>
+                <form id="loginForm">
+                    <input type="email" id="loginEmail" placeholder="E-posta Adresi" required>
+                    <input type="password" id="loginPassword" placeholder="Şifre" required>
+                    <button type="submit">Giriş Yap</button>
+                </form>
+                <div id="loginMessage" class="message"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+<div id="dashboard" style="display: none; text-align: center; margin-top: 30px;">
+        <h2 style="color: #0056b3;">💪 FlexiFit Kontrol Paneli</h2>
+        <p>Sisteme başarıyla giriş yaptınız. Hedeflerinize ulaşmak için hazırız!</p>
+        
+        <div style="background-color: #e9ecef; padding: 20px; border-radius: 10px; margin-top: 20px;">
+            <h3 style="color: #333;">🤖 AI Antrenör Analizi</h3>
+            <button id="aiButton" style="background-color: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">Yapay Zeka Tavsiyesi Al</button>
+            <p id="aiResult" style="margin-top: 15px; font-weight: bold; color: #555;"></p>
+        </div>
+    </div>
+</body>
+</html>
