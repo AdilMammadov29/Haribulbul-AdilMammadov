@@ -1,23 +1,25 @@
-# FLEXIFIT PRO
+# 🥗 FlexiFit - Akıllı Beslenme ve Fitness Takip Paneli
 
-> **Not:** Bu proje, T.C. Süleyman Demirel Üniversitesi Bilgisayar Mühendisliği Bölümü Yazılım Mühendisliği dersi kapsamında geliştirilmiştir.
+FlexiFit, kullanıcıların günlük beslenme alışkanlıklarını takip etmelerini sağlayan ve **Yapay Zeka desteğiyle** kişiselleştirilmiş sağlık tavsiyeleri sunan modern bir web uygulamasıdır.
+
+## 🚀 Öne Çıkan Özellikler
+* **AI Destekli Danışman:** OpenAI API entegrasyonu ile kullanıcı verilerine göre anlık beslenme önerileri.
+* **Dinamik Dashboard:** Kalori, su tüketimi ve aktivite takibi için kullanıcı dostu arayüz.
+* **Modern Teknoloji Yığını:** Frontend ve Backend'in ayrıştırıldığı (Decoupled) profesyonel mimari.
+* **Canlı Yayın (Deployment):** Vercel üzerinde kesintisiz çalışan canlı demo.
+
+## 🛠️ Kullanılan Teknolojiler
+* **Frontend:** HTML5, CSS3, JavaScript (Vanilla JS)
+* **Backend:** Python (Flask/FastAPI)
+* **Deployment:** Vercel & GitHub Actions
+* **AI Entegrasyonu:** GPT-4o-mini / OpenAI SDK
+
+## 📦 Kurulum ve Çalıştırma
+Proje Vercel üzerinde canlıdadır: [CANLI SİTE LİNKİNİ BURAYA YAPIŞTIR]
+
+Yerelde çalıştırmak için:
+1. `index.html` dosyasını tarayıcıda açmanız yeterlidir.
+2. AI özelliklerinin aktifleşmesi için Backend servisinin çalışır durumda olması gerekir.
 
 ---
-
-## 🔗 Proje Hakkında
-
-![FlexiFit Pro Görseli](Product.png)
-
-FlexiFit Pro, kullanıcıların fiziksel verilerine göre günlük kalori ve su ihtiyaçlarını hesaplayan, yapay zeka destekli ve zaman duyarlı kişisel bir beslenme asistanıdır. Amacımız, sağlıklı yaşamı teknolojiyle birleştirerek kullanıcılara özel, esnek ve akıllı bir deneyim sunmaktır.
-
-### 📄 Proje Dokümantasyonu
-Projenin tüm mühendislik süreçleri ve detaylı analizleri aşağıdaki dosyalarda bölümler halinde sunulmuştur:
-
-* [Gereksinim Analizi](./Gereksinim-Analizi.md)
-* [API Tasarımı](./API-Tasarimi.md)
-* [Web Front-End](./WebFrontEnd.md)
-* [REST API](./Rest-API.md)
-* [Sunum](./Sunum.md)
-
----
-*Geliştirici: Adil Mammadov*
+*Bu proje Süleyman Demirel Üniversitesi, Bilgisayar Mühendisliği bölümü kapsamında geliştirilmiştir.*
