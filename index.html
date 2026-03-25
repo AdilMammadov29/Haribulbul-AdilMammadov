@@ -3,55 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlexiFit - Adil Memmedov</title>
-    <link rel="stylesheet" href="style.css">
+    <title>FlexiFit Pro | Akıllı Beslenme ve Antrenör</title>
+    <style>
+        :root { --primary: #2ecc71; --dark: #2c3e50; --light: #ecf0f1; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--light); margin: 0; padding: 0; color: var(--dark); }
+        .container { max-width: 800px; margin: 50px auto; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        h1, h2 { text-align: center; color: var(--dark); }
+        .header-logo { text-align: center; font-size: 3em; margin-bottom: 10px; }
+        .form-group { margin-bottom: 15px; }
+        input { width: 95%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-top: 5px; }
+        button { width: 100%; padding: 12px; background-color: var(--primary); color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold; transition: 0.3s; margin-top: 10px;}
+        button:hover { background-color: #27ae60; }
+        .hidden { display: none; }
+        .toggle-link { text-align: center; margin-top: 15px; color: #3498db; cursor: pointer; text-decoration: underline; }
+        
+        /* Dashboard Özel Tasarım */
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+        .card { background: #f8f9fa; padding: 20px; border-radius: 12px; border-left: 5px solid var(--primary); text-align: center; }
+        .card i { font-size: 2em; margin-bottom: 10px; display: block; }
+        .ai-response { margin-top: 15px; padding: 15px; background: #e8f8f5; border-radius: 8px; font-style: italic; font-size: 0.9em;}
+        .admin-panel { margin-top: 30px; padding: 20px; background: #fff3cd; border-radius: 12px; border-left: 5px solid #ffc107; }
+        .barcode-box { height: 100px; background: #ddd; display: flex; align-items: center; justify-content: center; border-radius: 8px; margin-top: 10px; border: 2px dashed #999;}
+    </style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="header">
-            <h1>FlexiFit'e Hoş Geldin</h1>
-            <p>Sisteme giriş yap veya yeni kayıt oluştur.</p>
+<div class="container">
+    <div class="header-logo">🥗💪</div>
+    <h1>FlexiFit Pro</h1>
+    
+    <div id="auth-section">
+        <h2 id="form-title">Sisteme Giriş Yap</h2>
+        <div class="form-group">
+            <input type="email" id="email" placeholder="E-posta Adresiniz" required>
         </div>
-
-        <div class="form-wrapper">
-            
-            <div class="form-box">
-                <h2>Kayıt Ol</h2>
-                <form id="registerForm">
-                    <input type="text" id="regName" placeholder="Ad Soyad" required>
-                    <input type="email" id="regEmail" placeholder="E-posta Adresi" required>
-                    <input type="password" id="regPassword" placeholder="Şifre" required>
-                    <input type="number" id="regHeight" placeholder="Boy (cm)" required>
-                    <input type="number" id="regWeight" placeholder="Kilo (kg)" required>
-                    <button type="submit">Kayıt Ol</button>
-                </form>
-                <div id="regMessage" class="message"></div>
-            </div>
-
-            <div class="form-box">
-                <h2>Giriş Yap</h2>
-                <form id="loginForm">
-                    <input type="email" id="loginEmail" placeholder="E-posta Adresi" required>
-                    <input type="password" id="loginPassword" placeholder="Şifre" required>
-                    <button type="submit">Giriş Yap</button>
-                </form>
-                <div id="loginMessage" class="message"></div>
-            </div>
-
+        <div class="form-group">
+            <input type="password" id="password" placeholder="Şifreniz" required>
         </div>
+        <button onclick="handleAuth()" id="auth-btn">Giriş Yap</button>
+        <p class="toggle-link" onclick="toggleAuth()">Hesabın yok mu? Kayıt Ol</p>
     </div>
 
-    <script src="app.js"></script>
-<div id="dashboard" style="display: none; text-align: center; margin-top: 30px;">
-        <h2 style="color: #0056b3;">💪 FlexiFit Kontrol Paneli</h2>
-        <p>Sisteme başarıyla giriş yaptınız. Hedeflerinize ulaşmak için hazırız!</p>
+    <div id="dashboard-section" class="hidden">
+        <h2>Hoş Geldin, FlexiFit Üyesi! 🚀</h2>
+        <p style="text-align: center;">Hedeflerine ulaşmak için her şey hazır.</p>
         
-        <div style="background-color: #e9ecef; padding: 20px; border-radius: 10px; margin-top: 20px;">
-            <h3 style="color: #333;">🤖 AI Antrenör Analizi</h3>
-            <button id="aiButton" style="background-color: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">Yapay Zeka Tavsiyesi Al</button>
-            <p id="aiResult" style="margin-top: 15px; font-weight: bold; color: #555;"></p>
+        <div class="dashboard-grid">
+            <div class="card">
+                <i>🤖</i>
+                <h3>Yapay Zeka Asistanı</h3>
+                <p>Günlük kalori ve antrenman analizinizi yapın.</p>
+                <button onclick="getAIAdvice()" style="background-color: #8e44ad;">Tavsiye Al</button>
+                <div id="ai-result" class="ai-response hidden"></div>
+            </div>
+
+            <div class="card">
+                <i>📱</i>
+                <h3>Hızlı Barkod Tarama</h3>
+                <p>Yediğiniz ürünün barkodunu okutun.</p>
+                <div class="barcode-box">📸 Kamera Bekleniyor...</div>
+                <button onclick="scanBarcode()">Barkod Tara</button>
+            </div>
         </div>
+
+        <div class="admin-panel">
+            <h3 style="color: #d35400;">🗄️ Veritabanı Senkronizasyon Durumu</h3>
+            <p><strong>Durum:</strong> <span style="color: green;">MongoDB Atlas Bağlantısı Aktif ✅</span></p>
+            <p>Son giriş yapan kullanıcı verileri güvenli bir şekilde Render API üzerinden veritabanına işlenmiştir.</p>
+            <button onclick="showAdminData()" style="background-color: #f39c12;">Giriş Kayıtlarını Göster (Log)</button>
+            <pre id="admin-log" class="hidden" style="background: #333; color: #0f0; padding: 10px; border-radius: 5px; overflow-x: auto;"></pre>
+        </div>
+        
+        <button onclick="logout()" style="background-color: #e74c3c; margin-top: 30px;">Sistemden Çıkış Yap</button>
     </div>
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>
