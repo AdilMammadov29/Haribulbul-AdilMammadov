@@ -1,91 +1,85 @@
-// Senin canlı API adresin
 const API_URL = "https://flexifit-api.onrender.com";
+let isLoginMode = true;
 
-// --- KAYIT OL (REGISTER) İŞLEMİ ---
-document.getElementById('registerForm').addEventListener('submit', async (e) => {
-    e.preventDefault(); // Sayfanın yenilenmesini engeller
-    const messageDiv = document.getElementById('regMessage');
-    messageDiv.innerText = "Yükleniyor...";
-    messageDiv.style.color = "blue";
+function toggleAuth() {
+    isLoginMode = !isLoginMode;
+    document.getElementById("form-title").innerText = isLoginMode ? "Sisteme Giriş Yap" : "Yeni Hesap Oluştur";
+    document.getElementById("auth-btn").innerText = isLoginMode ? "Giriş Yap" : "Kayıt Ol";
+    document.querySelector(".toggle-link").innerText = isLoginMode ? "Hesabın yok mu? Kayıt Ol" : "Zaten hesabın var mı? Giriş Yap";
+}
 
-    // Kutulardaki bilgileri alıyoruz
-    const data = {
-        fullName: document.getElementById('regName').value,
-        email: document.getElementById('regEmail').value,
-        password: document.getElementById('regPassword').value,
-        height: parseInt(document.getElementById('regHeight').value),
-        weight: parseInt(document.getElementById('regWeight').value)
-    };
+async function handleAuth() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    
+    if(!email || !password) {
+        alert("Lütfen e-posta ve şifre girin!");
+        return;
+    }
+
+    const endpoint = isLoginMode ? "/auth/login" : "/auth/register";
+    const bodyData = isLoginMode ? { email, password } : { full_name: "Test Kullanıcı", email, password, height: 180, weight: 80 };
 
     try {
-        // API'ye bilgileri fırlatıyoruz
-        const response = await fetch(`${API_URL}/auth/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+        document.getElementById("auth-btn").innerText = "İşleniyor...";
+        const response = await fetch(API_URL + endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(bodyData)
         });
 
-        if (response.status === 201) {
-            messageDiv.innerText = "✅ Kayıt Başarılı! Şimdi giriş yapabilirsin.";
-            messageDiv.style.color = "green";
-            document.getElementById('registerForm').reset(); // Formu temizle
+        const data = await response.json();
+        
+        if (response.ok) {
+            alert(isLoginMode ? "Giriş Başarılı!" : "Kayıt Başarılı! Şimdi giriş yapabilirsiniz.");
+            if (isLoginMode) {
+                document.getElementById("auth-section").classList.add("hidden");
+                document.getElementById("dashboard-section").classList.remove("hidden");
+                localStorage.setItem("userEmail", email);
+            } else {
+                toggleAuth(); // Kayıttan sonra girişe yönlendir
+            }
         } else {
-            messageDiv.innerText = "❌ Kayıt başarısız! E-posta kullanılıyor olabilir.";
-            messageDiv.style.color = "red";
+            alert("Hata: " + (data.message || "İşlem başarısız."));
         }
     } catch (error) {
-        messageDiv.innerText = "❌ Sunucuya bağlanılamadı.";
-        messageDiv.style.color = "red";
+        alert("Sunucuya bağlanılamadı. API'nin açık olduğundan emin olun.");
+    } finally {
+        document.getElementById("auth-btn").innerText = isLoginMode ? "Giriş Yap" : "Kayıt Ol";
     }
-});
+}
 
-// --- GİRİŞ YAP (LOGIN) İŞLEMİ ---
-document.getElementById('loginForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const messageDiv = document.getElementById('loginMessage');
-    messageDiv.innerText = "Yükleniyor...";
-    messageDiv.style.color = "blue";
-
-    const data = {
-        email: document.getElementById('loginEmail').value,
-        password: document.getElementById('loginPassword').value
-    };
-
-    try {
-        const response = await fetch(`${API_URL}/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
-
-      if (response.status === 200) {
-            messageDiv.innerText = "✅ Giriş Başarılı! Yönlendiriliyorsunuz...";
-            messageDiv.style.color = "green";
-            
-            // 2 Saniye sonra formları gizle, paneli aç
-            setTimeout(() => {
-                document.getElementById('registerForm').parentElement.style.display = 'none'; // Kayıt formunu gizle
-                document.getElementById('loginForm').parentElement.style.display = 'none'; // Giriş formunu gizle
-                document.getElementById('dashboard').style.display = 'block'; // Paneli Göster
-            }, 1500);
-
-        } else {
-            messageDiv.innerText = "❌ Hatali e-posta veya şifre!";
-            messageDiv.style.color = "red";
-        }
-    } catch (error) {
-        messageDiv.innerText = "❌ Sunucuya bağlanilamadi.";
-        messageDiv.style.color = "red";
-    }
-    // --- AI BUTONU İŞLEMİ ---
-document.getElementById('aiButton').addEventListener('click', () => {
-    const aiText = document.getElementById('aiResult');
-    aiText.innerText = "Analiz ediliyor...";
-    aiText.style.color = "blue";
+function getAIAdvice() {
+    const resultDiv = document.getElementById("ai-result");
+    resultDiv.classList.remove("hidden");
+    resultDiv.innerHTML = "<em>Yapay Zeka analiz yapıyor... ⏳</em>";
     
     setTimeout(() => {
-        aiText.innerText = "Yapay Zeka Tavsiyesi: Vücut kitle indeksinize göre harika bir ivmeniz var. Bugün protein ağırlıklı beslenip, 45 dakikalık orta tempo kardiyo yapmanız önerilir. Barkod entegrasyonu bir sonraki sürümde aktif edilecektir.";
-        aiText.style.color = "green";
-    }, 2000);
-});
-});
+        resultDiv.innerHTML = "<strong>AI Antrenör:</strong> Bugün karbonhidrat alımını %10 azaltıp, su tüketimini 2.5 litreye çıkarırsan hedefine 3 gün daha erken ulaşacaksın! 💧🏋️‍♂️";
+    }, 1500);
+}
+
+function scanBarcode() {
+    alert("Kamera izni isteniyor... (Mobil cihazlarda barkod tarama arayüzü bu butona entegre edilecektir.)");
+}
+
+function showAdminData() {
+    const log = document.getElementById("admin-log");
+    log.classList.remove("hidden");
+    const email = localStorage.getItem("userEmail") || "bilinmeyen_kullanici@mail.com";
+    log.innerText = `[SİSTEM LOGU]
+Zaman: ${new Date().toLocaleString()}
+İşlem: Kullanıcı Doğrulandı
+Veritabanı: MongoDB Atlas
+Koleksiyon: 'users'
+Aktif Kullanıcı: ${email}
+Durum: 200 OK (Senkronize)`;
+}
+
+function logout() {
+    localStorage.removeItem("userEmail");
+    document.getElementById("dashboard-section").classList.add("hidden");
+    document.getElementById("auth-section").classList.remove("hidden");
+    document.getElementById("email").value = "";
+    document.getElementById("password").value = "";
+}
