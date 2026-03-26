@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FlexiFit Pro | Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/dist/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         .hidden { display: none !important; }
         .tab-active { color: #22c55e; border-top: 3px solid #22c55e; }
@@ -13,7 +13,6 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         
-        /* Barkod animasyonu için */
         @keyframes scan {
             0% { transform: translateY(-10px); opacity: 0; }
             50% { opacity: 1; }
@@ -193,7 +192,7 @@
                     </div>
 
                     <button onclick="updateProfile()" class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black hover:bg-black transition shadow-lg mb-4"><i class="fa-solid fa-floppy-disk mr-2"></i> Değişiklikleri Kaydet</button>
-                    <p class="text-center text-xs text-gray-400 font-bold mt-4 mb-2">FlexiFit Pro v1.0.5</p>
+                    <p class="text-center text-xs text-gray-400 font-bold mt-4 mb-2">FlexiFit Pro v1.0.6</p>
                 </div>
 
             </div>
@@ -207,6 +206,6 @@
         </div>
     </div>
     
-    <script src="app.js?v=5"></script>
+    <script src="app.js?v=6"></script>
 </body>
 </html>
