@@ -1,11 +1,25 @@
-# REST API
+# REST API (Adil Mammadov)
 
-REST API Adresi: https://api.flexifit.com/v1
+**REST API Yayın Adresi:** https://flexifit-api.onrender.com
+**Proje Tanıtım ve Test Videosu:** [VİDEO LİNKİNİ BURAYA KOYACAKSIN]
 
 ## OpenAPI YAML Dosyası
-
 YAML Dosyası (OpenAPI 3.0): [openapi.yml](./openapi.yml)
 
-## Adil Mammadov'un REST API Metotları
+## Sorumlu Olduğum REST API Metotları
 
-* [Adil Mammadov'un REST API Metotları](./API-Tasarimi.md)
+Aşağıdaki metotlar tarafımdan tasarlanmış, geliştirilmiş ve Postman üzerinden test edilmiştir:
+
+### 1. Kullanıcı Kayıt İşlemi (Register)
+* **Yol (Endpoint):** `/auth/register`
+* **Metot:** `POST`
+* **Açıklama:** Yeni bir kullanıcının sisteme ad, soyad, e-posta, şifre ve fiziksel özellikleri ile kayıt olmasını sağlar.
+* **Request Body (JSON):**
+  ```json
+  {
+    "full_name": "Adil Mammadov",
+    "email": "memmedovadil2910@gmail.com",
+    "password": "123456",
+    "height": 180,
+    "weight": 80
+  }
