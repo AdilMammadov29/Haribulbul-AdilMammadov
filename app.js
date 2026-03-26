@@ -4,102 +4,100 @@ function toggleAuth() {
     isLoginMode = !isLoginMode;
     document.getElementById("form-title").innerText = isLoginMode ? "Sisteme Giriş Yap" : "Yeni Hesap Oluştur";
     document.getElementById("auth-btn").innerText = isLoginMode ? "Giriş Yap" : "Kayıt Ol";
-    document.querySelector(".toggle-link").innerText = isLoginMode ? "Hesabın yok mu? Kayıt Ol" : "Zaten hesabın var mı? Giriş Yap";
-    
     const registerFields = document.getElementById("register-fields");
-    if(isLoginMode) {
-        registerFields.classList.add("hidden");
-    } else {
-        registerFields.classList.remove("hidden");
-    }
+    isLoginMode ? registerFields.classList.add("hidden") : registerFields.classList.remove("hidden");
 }
 
-async function handleAuth() {
+function handleAuth() {
     const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-    const fullname = document.getElementById("fullname").value;
-    const height = document.getElementById("height").value;
-    const weight = document.getElementById("weight").value;
+    if(!email) return alert("E-posta girin!");
     
-    if(!email || !password) {
-        alert("Lütfen e-posta ve şifre girin!");
-        return;
+    if(!isLoginMode) {
+        localStorage.setItem("userName", document.getElementById("fullname").value);
+        localStorage.setItem("userHeight", document.getElementById("height").value);
+        localStorage.setItem("userWeight", document.getElementById("weight").value);
+        alert("Kayıt Başarılı!");
+        toggleAuth();
+    } else {
+        document.getElementById("auth-section").classList.add("hidden");
+        document.getElementById("dashboard-section").classList.remove("hidden");
+        loadDashboard();
     }
+}
 
-    if(!isLoginMode && (!fullname || !height || !weight)) {
-        alert("Lütfen boy, kilo ve ad soyad bilgilerinizi eksiksiz girin!");
-        return;
-    }
+function switchTab(tab) {
+    ["home", "diet", "profile", "ai"].forEach(t => {
+        document.getElementById(`tab-${t}`).classList.add("hidden");
+        document.getElementById(`nav-${t}`).classList.remove("tab-active", "text-gray-400");
+        document.getElementById(`nav-${t}`).classList.add("text-gray-400");
+    });
+    document.getElementById(`tab-${tab}`).classList.remove("hidden");
+    document.getElementById(`nav-${tab}`).classList.add("tab-active");
+    document.getElementById(`nav-${tab}`).classList.remove("text-gray-400");
+}
 
-    document.getElementById("auth-btn").innerText = "İşleniyor...";
+function loadDashboard() {
+    const name = localStorage.getItem("userName") || "Kullanıcı";
+    const weight = localStorage.getItem("userWeight") || 80;
+    const height = localStorage.getItem("userHeight") || 180;
     
+    document.getElementById("home-name").innerText = name;
+    document.getElementById("p-name").value = name;
+    document.getElementById("p-weight").value = weight;
+    document.getElementById("p-height").value = height;
+
+    const bmi = (weight / ((height/100)**2)).toFixed(1);
+    document.getElementById("home-bmi").innerText = `VKİ: ${bmi} (${getBMICategory(bmi)})`;
+}
+
+function getBMICategory(bmi) {
+    if(bmi < 18.5) return "Zayıf";
+    if(bmi < 25) return "Normal";
+    if(bmi < 30) return "Fazla Kilolu";
+    return "Obez";
+}
+
+function addFood() {
+    const name = document.getElementById("food-name").value;
+    const cal = document.getElementById("food-cal").value;
+    if(!name || !cal) return;
+    const item = `<div class="flex justify-between p-3 bg-white border rounded-lg text-sm shadow-sm">
+                    <span>${name}</span><span class="font-bold text-green-600">${cal} kcal</span>
+                  </div>`;
+    document.getElementById("food-list").insertAdjacentHTML('afterbegin', item);
+    document.getElementById("food-name").value = "";
+    document.getElementById("food-cal").value = "";
+}
+
+function generateAIAdvice() {
+    const res = document.getElementById("ai-chat-result");
+    res.classList.remove("hidden");
+    res.innerHTML = "Analiz ediliyor... 🤖";
+    
+    const weight = localStorage.getItem("userWeight");
+    const bmi = (weight / ((localStorage.getItem("userHeight")/100)**2)).toFixed(1);
+
+    const advices = [
+        `VKİ değerin ${bmi}. Bugün protein ağırlıklı beslenip akşam yürüyüşünü 15 dakika uzatırsan metabolizman %5 hızlanır.`,
+        `Kilon ${weight} kg. Kas kütleni korumak için bugün kg başına 1.5g protein almayı unutma.`,
+        `Gözlemlerime göre su tüketimin düşük kalmış. ${weight} kg bir vücut için bugün 3 litreyi tamamlamalıyız!`,
+        `Haftalık hedefine çok yaklaştın. Bugün karbonhidratı sadece antrenman öncesi tüketmelisin.`
+    ];
+
     setTimeout(() => {
-        if (!isLoginMode) {
-            // Kayıt olurken verileri tarayıcı hafızasına kaydet
-            localStorage.setItem("userName", fullname);
-            localStorage.setItem("userHeight", height);
-            localStorage.setItem("userWeight", weight);
-            alert("Kayıt Başarılı! Veritabanına işlendi. Lütfen giriş yapın.");
-            toggleAuth(); 
-        } else {
-            alert("Giriş Başarılı!");
-            document.getElementById("auth-section").classList.add("hidden");
-            document.getElementById("dashboard-section").classList.remove("hidden");
-            localStorage.setItem("userEmail", email);
-            loadProfile(); // Giriş yapınca profili yükle
-        }
-        document.getElementById("auth-btn").innerText = isLoginMode ? "Giriş Yap" : "Kayıt Ol";
-    }, 1500); 
+        res.innerHTML = "<strong>AI Tavsiyesi:</strong> " + advices[Math.floor(Math.random() * advices.length)];
+    }, 1000);
 }
 
-function loadProfile() {
-    // Hafızadan verileri çek (yoksa varsayılan göster)
-    const name = localStorage.getItem("userName") || "Adil M.";
-    const h = localStorage.getItem("userHeight") || "180";
-    const w = localStorage.getItem("userWeight") || "80";
-
-    document.getElementById("display-name").innerText = name;
-    document.getElementById("display-height").innerText = h;
-    document.getElementById("display-weight").innerText = w;
-
-    // VKİ Hesaplama (Kilo / Boyun karesi)
-    const heightInMeters = h / 100;
-    const bmi = (w / (heightInMeters * heightInMeters)).toFixed(1);
-    
-    let durum = "";
-    if(bmi < 18.5) durum = "(Zayıf)";
-    else if(bmi < 25) durum = "(Normal)";
-    else if(bmi < 30) durum = "(Fazla Kilolu)";
-    else durum = "(Obez)";
-
-    document.getElementById("display-bmi").innerText = `Hedef Analizi: VKİ ${bmi} ${durum}`;
-}
-
-function getAIAdvice() {
-    const resultDiv = document.getElementById("ai-result");
-    resultDiv.classList.remove("hidden");
-    resultDiv.innerHTML = "<em>Yapay Zeka analiz yapıyor... ⏳</em>";
-    
-    setTimeout(() => {
-        resultDiv.innerHTML = "<strong>AI Antrenör:</strong> Hedef kilona ulaşmak için bugün karbonhidratı %10 azaltıp protein alımını artırmalısın. Harika gidiyorsun! 💪";
-    }, 1500);
-}
-
-function scanBarcode() {
-    alert("Kamera izni isteniyor... (Mobil cihazlarda barkod tarama arayüzü bu butona entegre edilecektir.)");
-}
-
-function showAdminData() {
-    const log = document.getElementById("admin-log");
-    log.classList.remove("hidden");
-    const email = localStorage.getItem("userEmail") || "test_kullanici@mail.com";
-    log.innerText = `[SİSTEM LOGU]\nZaman: ${new Date().toLocaleString()}\nİşlem: Kullanıcı Doğrulandı\nVeritabanı: MongoDB Atlas\nKoleksiyon: 'users'\nAktif Kullanıcı: ${email}\nDurum: 200 OK (Senkronize)`;
+function updateProfile() {
+    localStorage.setItem("userName", document.getElementById("p-name").value);
+    localStorage.setItem("userWeight", document.getElementById("p-weight").value);
+    localStorage.setItem("userHeight", document.getElementById("p-height").value);
+    alert("Profil Güncellendi!");
+    loadDashboard();
+    switchTab('home');
 }
 
 function logout() {
-    localStorage.removeItem("userEmail");
-    document.getElementById("dashboard-section").classList.add("hidden");
-    document.getElementById("auth-section").classList.remove("hidden");
-    document.getElementById("email").value = "";
-    document.getElementById("password").value = "";
+    location.reload();
 }
