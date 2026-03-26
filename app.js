@@ -10,7 +10,7 @@ function toggleAuth() {
     if (isLoginMode) {
         formTitle.innerText = "Sisteme Giriş Yap";
         authBtn.innerText = "Giriş Yap";
-        toggleLink.innerText = "Hesabın yok mu? Kayıt Ol";
+        toggleLink.innerText = "Hesabın yok mu? Yeni Hesap Oluştur";
         registerFields.classList.add("hidden");
     } else {
         formTitle.innerText = "Yeni Hesap Oluştur";
@@ -34,11 +34,10 @@ function handleAuth() {
         localStorage.setItem("userName", name);
         localStorage.setItem("userHeight", height);
         localStorage.setItem("userWeight", weight);
-        // Yeni kayıtta kaloriyi sıfırla
+        localStorage.setItem("userGoalWeight", weight - 5); // Hedefi otomatik ayarla
+        localStorage.setItem("userActivity", "1.55"); // Varsayılan orta aktivite
         localStorage.setItem("consumedCalories", 0);
         localStorage.removeItem("foodListHTML");
-        
-        alert("Kayıt Başarılı! Sisteme giriliyor...");
     }
     
     document.getElementById("auth-section").classList.add("hidden");
@@ -63,34 +62,38 @@ function loadDashboard() {
     const name = localStorage.getItem("userName") || "Sporcu";
     const weight = parseFloat(localStorage.getItem("userWeight")) || 80;
     const height = parseFloat(localStorage.getItem("userHeight")) || 180;
+    const goalWeight = localStorage.getItem("userGoalWeight") || (weight - 5);
+    const activityLevel = parseFloat(localStorage.getItem("userActivity")) || 1.55;
     
-    document.getElementById("home-name").innerText = name;
+    // Verileri ekrana bas
+    document.getElementById("home-name").innerText = name.split(" ")[0]; // Sadece ilk isim
     document.getElementById("p-name").value = name;
     document.getElementById("p-weight").value = weight;
     document.getElementById("p-height").value = height;
+    document.getElementById("p-goal").value = goalWeight;
+    document.getElementById("p-activity").value = activityLevel;
 
-    // GERÇEK MATEMATİK: Mifflin-St Jeor Formülü (Erkek/Varsayılan bazlı BMR)
+    // GERÇEK MATEMATİK: Mifflin-St Jeor Formülü + Aktivite Çarpanı
     const bmr = (10 * weight) + (6.25 * height) - (5 * 25) + 5;
-    const dailyGoal = Math.round(bmr * 1.3); // Hafif aktif çarpanı
+    const dailyGoal = Math.round(bmr * activityLevel); 
     localStorage.setItem("dailyGoal", dailyGoal);
 
     // VKİ Hesapla
     const bmi = (weight / ((height/100)**2)).toFixed(1);
     document.getElementById("home-bmi").innerText = bmi;
 
-    // Yemek listesini hafızadan çek
+    // Yemek listesini yükle
     const savedList = localStorage.getItem("foodListHTML");
     const listContainer = document.getElementById("food-list");
     if(savedList) {
         listContainer.innerHTML = savedList;
     } else {
-        listContainer.innerHTML = `<p id="empty-food" class="text-sm text-gray-400 italic text-center mt-4">Henüz bir kalori girişi yapmadın.</p>`;
+        listContainer.innerHTML = `<p id="empty-food" class="text-xs text-gray-400 font-bold uppercase tracking-widest text-center mt-6">Bugün Kalori Alınmadı.</p>`;
     }
 
     updateCalorieUI();
 }
 
-// KALORİ ARAYÜZÜNÜ CANLI GÜNCELLEME
 function updateCalorieUI() {
     const goal = parseInt(localStorage.getItem("dailyGoal")) || 2000;
     const consumed = parseInt(localStorage.getItem("consumedCalories")) || 0;
@@ -105,60 +108,91 @@ function updateCalorieUI() {
     const consumedEl = document.getElementById("cal-consumed");
     const remainingEl = document.getElementById("cal-remaining");
 
-    // Hedef aşılırsa kırmızı uyarı sistemi
     if(consumed > goal) {
-        progressEl.classList.replace("bg-green-500", "bg-red-500");
+        progressEl.classList.replace("from-green-400", "from-red-400");
+        progressEl.classList.replace("to-green-500", "to-red-500");
         consumedEl.classList.replace("text-green-500", "text-red-500");
-        remainingEl.innerText = `AŞILAN: ${Math.abs(remaining)} kcal`;
-        remainingEl.className = "text-xs font-bold text-white bg-red-500 px-2 py-1 rounded";
+        remainingEl.innerText = `LİMİT AŞILDI: ${Math.abs(remaining)} kcal`;
+        remainingEl.className = "text-xs font-bold text-white bg-red-500 px-3 py-1.5 rounded-lg border border-red-600";
     } else {
-        progressEl.classList.replace("bg-red-500", "bg-green-500");
+        progressEl.classList.replace("from-red-400", "from-green-400");
+        progressEl.classList.replace("to-red-500", "to-green-500");
         consumedEl.classList.replace("text-red-500", "text-green-500");
         remainingEl.innerText = `Kalan: ${remaining} kcal`;
-        remainingEl.className = "text-xs font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded";
+        remainingEl.className = "text-xs font-bold text-gray-500 bg-gray-50 border px-3 py-1.5 rounded-lg";
     }
 
-    // Ana sayfa barını da güncelle
     const homeSummary = document.getElementById("home-cal-summary");
     if(homeSummary) homeSummary.innerText = `${consumed} / ${goal} kcal`;
 }
 
-// YEMEK EKLEME VE HAFIZAYA YAZMA
-function addFood() {
-    const name = document.getElementById("food-name").value;
-    const cal = document.getElementById("food-cal").value;
+function addFood(customName = null, customCal = null) {
+    const name = customName || document.getElementById("food-name").value;
+    const cal = customCal || document.getElementById("food-cal").value;
+    
     if(!name || !cal) return alert("Yemek adı ve kalori girilmelidir!");
 
-    // Kaloriyi artır
     let consumed = parseInt(localStorage.getItem("consumedCalories")) || 0;
     consumed += parseInt(cal);
     localStorage.setItem("consumedCalories", consumed);
 
-    // Listeye ekle
     const emptyMsg = document.getElementById("empty-food");
     if(emptyMsg) emptyMsg.remove();
 
-    const itemHTML = `<div class="flex justify-between items-center p-4 bg-white border border-gray-100 rounded-xl shadow-sm transform transition hover:-translate-y-1 hover:shadow-md">
-                    <span class="text-gray-800 font-bold"><i class="fa-solid fa-utensils text-green-400 mr-2"></i> ${name}</span>
-                    <span class="font-black text-gray-800 text-lg">+${cal} <span class="text-xs text-gray-400 font-normal">kcal</span></span>
+    const itemHTML = `<div class="flex justify-between items-center p-4 bg-white border border-gray-100 rounded-2xl shadow-sm transform transition hover:-translate-y-1 hover:shadow-md">
+                    <span class="text-gray-800 font-bold flex items-center"><i class="fa-solid fa-utensils text-green-400 mr-3 text-lg"></i> ${name}</span>
+                    <span class="font-black text-gray-800 text-lg">+${cal} <span class="text-xs text-gray-400 font-bold">kcal</span></span>
                   </div>`;
     
     document.getElementById("food-list").insertAdjacentHTML('afterbegin', itemHTML);
-    
-    // Listeyi hafızaya kaydet
     localStorage.setItem("foodListHTML", document.getElementById("food-list").innerHTML);
     
-    document.getElementById("food-name").value = "";
-    document.getElementById("food-cal").value = "";
-    
+    if(!customName) {
+        document.getElementById("food-name").value = "";
+        document.getElementById("food-cal").value = "";
+    }
     updateCalorieUI();
+}
+
+// BARKOD OKUMA SİMÜLASYONU (VİDEO İÇİN ŞOV KISMI)
+function scanBarcode() {
+    const btn = document.getElementById("barcode-btn");
+    const originalText = btn.innerHTML;
+    
+    // Taranıyor efekti
+    btn.innerHTML = "<i class='fa-solid fa-camera scanner-line'></i> Taranıyor...";
+    btn.classList.add("bg-green-600");
+    btn.classList.remove("bg-gray-800");
+
+    setTimeout(() => {
+        // Gerçekçi Ürün Veritabanı (Mock)
+        const products = [
+            { name: "Züber Fıstık Ezmeli Bar", cal: 175 },
+            { name: "Eti Lifalif Yulaf Ezmesi", cal: 350 },
+            { name: "Pınar Protein Süt Kakaolu", cal: 250 },
+            { name: "Torku Tam Yulaflı Bisküvi", cal: 420 },
+            { name: "Fellas Yüksek Protein Bar", cal: 145 }
+        ];
+        
+        const randomProduct = products[Math.floor(Math.random() * products.length)];
+        
+        // Onay al ve ekle
+        if(confirm(`📷 Barkod Başarıyla Okundu!\n\nÜrün: ${randomProduct.name}\nKalori: ${randomProduct.cal} kcal\n\nGünlük listene eklensin mi?`)) {
+            addFood(randomProduct.name, randomProduct.cal);
+        }
+
+        // Butonu eski haline getir
+        btn.innerHTML = originalText;
+        btn.classList.remove("bg-green-600");
+        btn.classList.add("bg-gray-800");
+    }, 1500); // 1.5 saniyelik gerçekçi tarama süresi
 }
 
 function resetDay() {
     if(confirm("Bugünün tüm kalori kayıtlarını sıfırlamak istiyor musun?")) {
         localStorage.setItem("consumedCalories", 0);
         localStorage.removeItem("foodListHTML");
-        document.getElementById("food-list").innerHTML = `<p id="empty-food" class="text-sm text-gray-400 italic text-center mt-4">Henüz bir kalori girişi yapmadın.</p>`;
+        document.getElementById("food-list").innerHTML = `<p id="empty-food" class="text-xs text-gray-400 font-bold uppercase tracking-widest text-center mt-6">Bugün Kalori Alınmadı.</p>`;
         updateCalorieUI();
     }
 }
@@ -167,39 +201,46 @@ function updateProfile() {
     const newName = document.getElementById("p-name").value;
     const newWeight = document.getElementById("p-weight").value;
     const newHeight = document.getElementById("p-height").value;
-    if(!newName || !newWeight || !newHeight) return alert("Alanlar boş bırakılamaz!");
+    const newGoal = document.getElementById("p-goal").value;
+    const newActivity = document.getElementById("p-activity").value;
+
+    if(!newName || !newWeight || !newHeight || !newGoal) return alert("Alanlar boş bırakılamaz!");
 
     localStorage.setItem("userName", newName);
     localStorage.setItem("userWeight", newWeight);
     localStorage.setItem("userHeight", newHeight);
+    localStorage.setItem("userGoalWeight", newGoal);
+    localStorage.setItem("userActivity", newActivity);
     
-    alert("Profil güncellendi! Günlük kalori hedefin yeni kilona göre yeniden hesaplandı.");
+    alert("Profil ve hedefler başarıyla güncellendi! Günlük kalori ihtiyacın aktivite seviyene göre yeniden hesaplandı.");
     loadDashboard();
-    switchTab('diet');
+    switchTab('diet'); // Değişikliği görmesi için diyet sekmesine at
 }
 
 function generateAIAdvice() {
     const res = document.getElementById("ai-chat-result");
     res.classList.remove("hidden");
-    res.innerHTML = "<span class='text-gray-500 italic'><i class='fa-solid fa-spinner fa-spin mr-2'></i> Anlık verilerin işleniyor...</span>";
+    res.innerHTML = "<span class='text-gray-500 italic font-bold'><i class='fa-solid fa-spinner fa-spin mr-2'></i> Verilerin işleniyor...</span>";
     
     const goal = parseInt(localStorage.getItem("dailyGoal")) || 2000;
     const consumed = parseInt(localStorage.getItem("consumedCalories")) || 0;
     const remaining = goal - consumed;
+    const weight = localStorage.getItem("userWeight");
+    const targetWeight = localStorage.getItem("userGoalWeight");
 
     let dynamicAdvice = "";
     if (consumed === 0) {
-        dynamicAdvice = `Güne henüz başlamamışsın. Bugün hedefin ${goal} kalori. Güne protein ağırlıklı bir kahvaltıyla başlamalısın! 🍳`;
+        dynamicAdvice = `Güne henüz başlamamışsın. ${targetWeight} kg hedefine ulaşman için bugün kalori bütçen tam ${goal} kcal. Sağlıklı bir kahvaltıyla start verelim! 🍳`;
     } else if (remaining > 500) {
-        dynamicAdvice = `Şu ana kadar ${consumed} kalori aldın. Geriye ${remaining} kalori hakkın var. Akşam yemeğinde ızgara tavuk ve salata mükemmel bir tercih olur. 🥗`;
+        dynamicAdvice = `Şu ana kadar ${consumed} kcal aldın. Geriye ${remaining} kcal hakkın var. Akşam yemeğinde ızgara tavuk ve mevsim salata mükemmel bir tercih olur. 🥗`;
     } else if (remaining > 0) {
-        dynamicAdvice = `Dikkatli ol, günlük hedefine çok yaklaştın! Sadece ${remaining} kalori hakkın kaldı. Eğer acıkırsan şekersiz yeşil çay ve çiğ badem tüketebilirsin. 🍵`;
+        dynamicAdvice = `Dikkatli ol, günlük sınırına çok yaklaştın! Sadece ${remaining} kcal hakkın kaldı. Eğer çok acıkırsan şekersiz yeşil çay ve 5-6 adet çiğ badem tüketebilirsin. 🍵`;
     } else {
-        dynamicAdvice = `Günlük ${goal} kalorilik hedefini ${Math.abs(remaining)} kalori aştın. Moral bozmak yok, yarın antrenman süreni 15 dakika uzatarak bunu dengeleyebiliriz! 🏃‍♂️`;
+        dynamicAdvice = `Günlük ${goal} kcal hedefini ${Math.abs(remaining)} kcal aştın. Moral bozmak yok! ${targetWeight} kg hedefini korumak için yarın antrenman süreni 15-20 dakika uzatarak bunu kolayca dengeleyebiliriz. 🏃‍♂️💪`;
     }
 
     setTimeout(() => {
-        res.innerHTML = "<strong><i class='fa-solid fa-bolt text-yellow-500 mr-1'></i> AI Coach Analizi:</strong><br><br><span class='text-sm text-gray-700 leading-relaxed'>" + dynamicAdvice + "</span>";
+        res.innerHTML = "<strong><i class='fa-solid fa-bolt text-yellow-500 mr-2 text-xl'></i> AI Coach Analizi:</strong><br><br><span class='text-sm text-gray-700 leading-relaxed font-medium'>" + dynamicAdvice + "</span>";
     }, 1500);
 }
 
