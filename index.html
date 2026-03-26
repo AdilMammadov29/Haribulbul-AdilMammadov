@@ -15,7 +15,7 @@
     <div class="bg-white h-[750px] w-full max-w-md shadow-2xl relative overflow-hidden flex flex-col">
         
         <div id="auth-section" class="p-8 flex-1 flex flex-col justify-center">
-            <h2 class="text-3xl font-bold text-gray-800 text-center mb-8">FlexiFit Pro</h2>
+            <h2 class="text-3xl font-bold text-gray-800 text-center mb-8"><i class="fa-solid fa-leaf text-green-500"></i> FlexiFit Pro</h2>
             <h3 id="form-title" class="text-lg font-semibold text-gray-600 mb-6 text-center">Sisteme Giriş Yap</h3>
             
             <div id="register-fields" class="hidden">
@@ -29,103 +29,104 @@
             <input type="email" id="email" placeholder="E-posta" class="w-full p-3 mb-4 border rounded bg-gray-50 focus:ring-2 focus:ring-green-400 focus:outline-none">
             <input type="password" id="password" placeholder="Şifre" class="w-full p-3 mb-6 border rounded bg-gray-50 focus:ring-2 focus:ring-green-400 focus:outline-none">
             
-            <button id="auth-btn" onclick="handleAuth()" class="w-full bg-green-500 text-white font-bold py-3 rounded hover:bg-green-600 transition">Giriş Yap</button>
+            <button id="auth-btn" onclick="handleAuth()" class="w-full bg-green-500 text-white font-bold py-3 rounded hover:bg-green-600 transition shadow-md">Giriş Yap</button>
             
-            <button type="button" class="mt-4 text-sm text-center text-blue-500 cursor-pointer hover:underline w-full" onclick="toggleAuth()" id="toggle-link">Hesabın yok mu? Kayıt Ol</button>
+            <button type="button" class="mt-4 text-sm text-center text-blue-500 font-medium cursor-pointer hover:underline w-full" onclick="toggleAuth()" id="toggle-link">Hesabın yok mu? Kayıt Ol</button>
         </div>
 
         <div id="dashboard-section" class="hidden flex-1 flex flex-col overflow-hidden">
-            <div class="bg-white border-b p-4 flex justify-between items-center shadow-sm">
+            <div class="bg-white border-b p-4 flex justify-between items-center shadow-sm z-10">
                 <span class="font-bold text-xl text-green-600"><i class="fa-solid fa-leaf"></i> FlexiFit</span>
-                <button onclick="logout()" class="text-red-500 text-sm font-bold"><i class="fa-solid fa-right-from-bracket"></i> Çıkış</button>
+                <button onclick="logout()" class="text-red-500 text-sm font-bold hover:text-red-700 transition"><i class="fa-solid fa-right-from-bracket"></i> Çıkış</button>
             </div>
 
             <div id="content" class="flex-1 p-4 overflow-y-auto pb-20 bg-gray-50">
                 
                 <div id="tab-home">
-                    <div class="bg-green-500 rounded-2xl p-6 text-white mb-6 shadow-md">
+                    <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-2xl p-6 text-white mb-6 shadow-lg">
                         <p class="opacity-90 text-sm">Hoş geldin,</p>
                         <h2 id="home-name" class="text-2xl font-bold mb-2">Kullanıcı</h2>
                         <div class="mt-4 flex justify-between items-end">
                             <div>
-                                <p class="text-xs uppercase opacity-90">Güncel Durum</p>
-                                <p id="home-bmi" class="text-lg font-semibold">VKİ: Hesaplanıyor...</p>
+                                <p class="text-xs uppercase opacity-90 font-bold tracking-wider">Güncel Analiz</p>
+                                <p id="home-bmi" class="text-lg font-semibold bg-white/20 px-3 py-1 rounded-lg mt-1 inline-block">VKİ: Hesaplanıyor...</p>
                             </div>
-                            <i class="fa-solid fa-fire text-4xl opacity-50"></i>
+                            <i class="fa-solid fa-fire text-5xl opacity-30"></i>
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="bg-white border shadow-sm p-4 rounded-xl text-center">
-                            <i class="fa-solid fa-droplet text-blue-500 mb-2 text-xl"></i>
-                            <p class="text-xs text-gray-500 uppercase">Su Hedefi</p>
-                            <p class="font-bold text-lg">2.5 Litre</p>
+                            <i class="fa-solid fa-droplet text-blue-500 mb-2 text-2xl"></i>
+                            <p class="text-xs text-gray-500 uppercase font-bold">Su Hedefi</p>
+                            <p class="font-bold text-xl text-gray-800">2.5 L</p>
                         </div>
                         <div class="bg-white border shadow-sm p-4 rounded-xl text-center">
-                            <i class="fa-solid fa-shoe-prints text-orange-500 mb-2 text-xl"></i>
-                            <p class="text-xs text-gray-500 uppercase">Adım</p>
-                            <p class="font-bold text-lg">6,400</p>
+                            <i class="fa-solid fa-shoe-prints text-orange-500 mb-2 text-2xl"></i>
+                            <p class="text-xs text-gray-500 uppercase font-bold">Günlük Adım</p>
+                            <p class="font-bold text-xl text-gray-800">6,400</p>
                         </div>
                     </div>
                 </div>
 
                 <div id="tab-diet" class="hidden">
-                    <h3 class="font-bold text-lg mb-4 text-gray-800"><i class="fa-solid fa-apple-whole text-red-500"></i> Beslenme Günlüğü</h3>
-                    <div class="flex gap-2 mb-6 bg-white p-3 rounded-xl shadow-sm border">
-                        <input type="text" id="food-name" placeholder="Örn: Yulaf Ezmesi" class="flex-1 p-2 bg-gray-50 border rounded focus:outline-none focus:ring-1 focus:ring-green-400">
-                        <input type="number" id="food-cal" placeholder="Kcal" class="w-20 p-2 bg-gray-50 border rounded focus:outline-none focus:ring-1 focus:ring-green-400">
-                        <button onclick="addFood()" class="bg-green-500 text-white px-4 rounded font-bold hover:bg-green-600">+</button>
+                    <h3 class="font-bold text-lg mb-4 text-gray-800"><i class="fa-solid fa-apple-whole text-red-500"></i> Kalori Takibi</h3>
+                    <div class="flex gap-2 mb-6 bg-white p-3 rounded-xl shadow-sm border border-gray-100">
+                        <input type="text" id="food-name" placeholder="Yediğin öğün..." class="flex-1 p-2 bg-gray-50 border rounded focus:outline-none focus:ring-2 focus:ring-green-400">
+                        <input type="number" id="food-cal" placeholder="Kcal" class="w-20 p-2 bg-gray-50 border rounded focus:outline-none focus:ring-2 focus:ring-green-400">
+                        <button onclick="addFood()" class="bg-green-500 text-white px-4 rounded font-bold hover:bg-green-600 transition shadow"><i class="fa-solid fa-plus"></i></button>
                     </div>
-                    <h4 class="text-sm font-bold text-gray-500 mb-2 uppercase">Bugün Yenilenler</h4>
+                    <h4 class="text-sm font-bold text-gray-500 mb-3 uppercase">Bugün Tüketilenler</h4>
                     <div id="food-list" class="space-y-2">
-                        <p id="empty-food" class="text-sm text-gray-400 italic text-center mt-4">Henüz yemek eklenmedi.</p>
-                    </div>
-                </div>
-
-                <div id="tab-profile" class="hidden text-left">
-                    <h3 class="font-bold text-lg mb-4 text-gray-800"><i class="fa-solid fa-user-gear text-blue-500"></i> Profil Ayarları</h3>
-                    <div class="space-y-4 bg-white p-5 rounded-xl border shadow-sm">
-                        <div>
-                            <label class="text-xs font-bold text-gray-500 uppercase">Ad Soyad</label>
-                            <input type="text" id="p-name" class="w-full p-2 border-b bg-gray-50 focus:outline-none text-gray-800">
-                        </div>
-                        <div class="flex gap-4">
-                            <div class="flex-1">
-                                <label class="text-xs font-bold text-gray-500 uppercase">Boy (cm)</label>
-                                <input type="number" id="p-height" class="w-full p-2 border-b bg-gray-50 text-gray-800">
-                            </div>
-                            <div class="flex-1">
-                                <label class="text-xs font-bold text-gray-500 uppercase">Kilo (kg)</label>
-                                <input type="number" id="p-weight" class="w-full p-2 border-b bg-gray-50 text-gray-800">
-                            </div>
-                        </div>
-                        <button onclick="updateProfile()" class="w-full bg-gray-800 text-white py-3 rounded-lg font-bold hover:bg-black mt-2">Bilgileri Güncelle</button>
+                        <p id="empty-food" class="text-sm text-gray-400 italic text-center mt-6">Henüz bir kalori girişi yapmadın.</p>
                     </div>
                 </div>
 
                 <div id="tab-ai" class="hidden">
                     <div class="text-center py-6">
-                        <div class="inline-block p-5 bg-blue-100 rounded-full mb-4 shadow-inner">
-                            <i class="fa-solid fa-robot text-5xl text-blue-600 animate-bounce"></i>
+                        <div class="inline-block p-6 bg-blue-50 rounded-full mb-4 shadow-inner border border-blue-100">
+                            <i class="fa-solid fa-robot text-6xl text-blue-500 animate-bounce"></i>
                         </div>
                         <h3 class="font-bold text-2xl mb-2 text-gray-800">Yapay Zeka Antrenör</h3>
                         <p class="text-sm text-gray-500 px-6">Senin boyuna, kilona ve hedeflerine göre tamamen kişiselleştirilmiş analizler yaparım.</p>
                         
-                        <button onclick="generateAIAdvice()" class="mt-6 bg-blue-600 text-white font-bold px-8 py-4 rounded-full shadow-lg hover:bg-blue-700 transition transform hover:scale-105">Yeni Tavsiye Üret</button>
+                        <button onclick="generateAIAdvice()" class="mt-6 bg-blue-600 text-white font-bold px-8 py-4 rounded-full shadow-lg hover:bg-blue-700 transition transform hover:scale-105 active:scale-95"><i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Yeni Tavsiye Üret</button>
                         
                         <div id="ai-chat-result" class="mt-8 hidden bg-white p-5 rounded-2xl text-left text-gray-800 border-l-4 border-blue-500 shadow-md"></div>
                     </div>
                 </div>
 
+                <div id="tab-profile" class="hidden text-left">
+                    <h3 class="font-bold text-lg mb-4 text-gray-800"><i class="fa-solid fa-user-gear text-blue-500"></i> Profil Ayarları</h3>
+                    <div class="space-y-5 bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                        <div>
+                            <label class="text-xs font-bold text-gray-500 uppercase">Ad Soyad</label>
+                            <input type="text" id="p-name" class="w-full p-2 border-b bg-transparent focus:outline-none focus:border-green-500 text-gray-800 font-medium">
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="flex-1">
+                                <label class="text-xs font-bold text-gray-500 uppercase">Boy (cm)</label>
+                                <input type="number" id="p-height" class="w-full p-2 border-b bg-transparent focus:outline-none focus:border-green-500 text-gray-800 font-medium">
+                            </div>
+                            <div class="flex-1">
+                                <label class="text-xs font-bold text-gray-500 uppercase">Kilo (kg)</label>
+                                <input type="number" id="p-weight" class="w-full p-2 border-b bg-transparent focus:outline-none focus:border-green-500 text-gray-800 font-medium">
+                            </div>
+                        </div>
+                        <button onclick="updateProfile()" class="w-full bg-gray-800 text-white py-3 rounded-lg font-bold hover:bg-black transition shadow-md mt-4"><i class="fa-solid fa-floppy-disk mr-2"></i> Bilgileri Güncelle</button>
+                    </div>
+                </div>
+
             </div>
 
-            <div class="bg-white border-t absolute bottom-0 w-full h-16 flex justify-around items-center shadow-[0_-5px_15px_-10px_rgba(0,0,0,0.1)]">
-                <button onclick="switchTab('home')" id="nav-home" class="flex flex-col items-center tab-active w-1/4 py-2"><i class="fa-solid fa-house text-lg mb-1"></i><span class="text-[10px] font-bold">Özet</span></button>
-                <button onclick="switchTab('diet')" id="nav-diet" class="flex flex-col items-center text-gray-400 w-1/4 py-2"><i class="fa-solid fa-utensils text-lg mb-1"></i><span class="text-[10px] font-bold">Kalori</span></button>
-                <button onclick="switchTab('ai')" id="nav-ai" class="flex flex-col items-center text-gray-400 w-1/4 py-2"><i class="fa-solid fa-brain text-lg mb-1"></i><span class="text-[10px] font-bold">AI Coach</span></button>
-                <button onclick="switchTab('profile')" id="nav-profile" class="flex flex-col items-center text-gray-400 w-1/4 py-2"><i class="fa-solid fa-user text-lg mb-1"></i><span class="text-[10px] font-bold">Profil</span></button>
+            <div class="bg-white border-t absolute bottom-0 w-full h-16 flex justify-around items-center shadow-[0_-5px_20px_-10px_rgba(0,0,0,0.15)] z-10">
+                <button onclick="switchTab('home')" id="nav-home" class="flex flex-col items-center tab-active w-1/4 py-2 transition"><i class="fa-solid fa-house text-xl mb-1"></i><span class="text-[10px] font-bold">Özet</span></button>
+                <button onclick="switchTab('diet')" id="nav-diet" class="flex flex-col items-center text-gray-400 w-1/4 py-2 transition hover:text-green-500"><i class="fa-solid fa-utensils text-xl mb-1"></i><span class="text-[10px] font-bold">Kalori</span></button>
+                <button onclick="switchTab('ai')" id="nav-ai" class="flex flex-col items-center text-gray-400 w-1/4 py-2 transition hover:text-green-500"><i class="fa-solid fa-brain text-xl mb-1"></i><span class="text-[10px] font-bold">AI Coach</span></button>
+                <button onclick="switchTab('profile')" id="nav-profile" class="flex flex-col items-center text-gray-400 w-1/4 py-2 transition hover:text-green-500"><i class="fa-solid fa-user text-xl mb-1"></i><span class="text-[10px] font-bold">Profil</span></button>
             </div>
         </div>
     </div>
-    <script src="app.js"></script>
+    
+    <script src="app.js?v=2"></script>
 </body>
 </html>
