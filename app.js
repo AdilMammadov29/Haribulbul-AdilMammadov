@@ -1,4 +1,5 @@
 let isLoginMode = true;
+const API_URL = "https://flexifit-api.onrender.com"; // GERÇEK BACKEND ADRESİN
 
 function toggleAuth() {
     isLoginMode = !isLoginMode;
@@ -20,31 +21,77 @@ function toggleAuth() {
     }
 }
 
-function handleAuth() {
+// İŞTE ASIL DEĞİŞEN VE GERÇEK VERİTABANINA BAĞLANAN KISIM
+async function handleAuth() {
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
+    
     if(!email || !password) return alert("Lütfen e-posta ve şifrenizi girin!");
+
+    // API'ye gönderilecek veriyi hazırlıyoruz
+    const endpoint = isLoginMode ? "/auth/login" : "/auth/register";
+    let bodyData = { email: email, password: password };
 
     if(!isLoginMode) {
         const name = document.getElementById("fullname").value;
         const height = document.getElementById("height").value;
         const weight = document.getElementById("weight").value;
+        
         if(!name || !height || !weight) return alert("Ad, boy ve kilo zorunludur!");
-
-        localStorage.setItem("userName", name);
-        localStorage.setItem("userHeight", height);
-        localStorage.setItem("userWeight", weight);
-        localStorage.setItem("userGoalWeight", weight - 5); // Hedefi otomatik ayarla
-        localStorage.setItem("userActivity", "1.55"); // Varsayılan orta aktivite
-        localStorage.setItem("consumedCalories", 0);
-        localStorage.removeItem("foodListHTML");
+        
+        bodyData = { 
+            full_name: name, 
+            email: email, 
+            password: password, 
+            height: parseInt(height), 
+            weight: parseInt(weight) 
+        };
     }
-    
-    document.getElementById("auth-section").classList.add("hidden");
-    document.getElementById("dashboard-section").classList.remove("hidden");
-    loadDashboard();
+
+    const btn = document.getElementById("auth-btn");
+    const originalText = btn.innerText;
+    btn.innerText = "Bağlanıyor... ⏳";
+    btn.disabled = true;
+
+    try {
+        // RENDER SUNUCUNA GERÇEK İSTEK ATIYORUZ
+        const response = await fetch(API_URL + endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(bodyData)
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            // BACKEND ONAY VERDİ! GİRİŞ/KAYIT BAŞARILI
+            if(!isLoginMode) {
+                localStorage.setItem("userName", bodyData.full_name);
+                localStorage.setItem("userHeight", bodyData.height);
+                localStorage.setItem("userWeight", bodyData.weight);
+                localStorage.setItem("userGoalWeight", bodyData.weight - 5);
+                localStorage.setItem("userActivity", "1.55");
+                localStorage.setItem("consumedCalories", 0);
+                localStorage.removeItem("foodListHTML");
+            }
+            
+            document.getElementById("auth-section").classList.add("hidden");
+            document.getElementById("dashboard-section").classList.remove("hidden");
+            loadDashboard();
+        } else {
+            // Backend'den hata dönerse (Örn: "Bu mail zaten kayıtlı")
+            alert("Hata: " + (data.message || "İşlem başarısız."));
+        }
+    } catch (error) {
+        alert("Sunucuya bağlanılamadı. CORS hatası olabilir veya API kapalı.");
+        console.error("API Bağlantı Hatası:", error);
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
 }
 
+// BUNDAN SONRAKİ KISIMLAR V6 İLE BİREBİR AYNI (TASARIM VE MANTIK DEĞİŞMEDİ)
 function switchTab(tab) {
     ["home", "diet", "profile", "ai"].forEach(t => {
         document.getElementById(`tab-${t}`).classList.add("hidden");
@@ -65,24 +112,20 @@ function loadDashboard() {
     const goalWeight = localStorage.getItem("userGoalWeight") || (weight - 5);
     const activityLevel = parseFloat(localStorage.getItem("userActivity")) || 1.55;
     
-    // Verileri ekrana bas
-    document.getElementById("home-name").innerText = name.split(" ")[0]; // Sadece ilk isim
+    document.getElementById("home-name").innerText = name.split(" ")[0];
     document.getElementById("p-name").value = name;
     document.getElementById("p-weight").value = weight;
     document.getElementById("p-height").value = height;
     document.getElementById("p-goal").value = goalWeight;
     document.getElementById("p-activity").value = activityLevel;
 
-    // GERÇEK MATEMATİK: Mifflin-St Jeor Formülü + Aktivite Çarpanı
     const bmr = (10 * weight) + (6.25 * height) - (5 * 25) + 5;
     const dailyGoal = Math.round(bmr * activityLevel); 
     localStorage.setItem("dailyGoal", dailyGoal);
 
-    // VKİ Hesapla
     const bmi = (weight / ((height/100)**2)).toFixed(1);
     document.getElementById("home-bmi").innerText = bmi;
 
-    // Yemek listesini yükle
     const savedList = localStorage.getItem("foodListHTML");
     const listContainer = document.getElementById("food-list");
     if(savedList) {
@@ -154,18 +197,15 @@ function addFood(customName = null, customCal = null) {
     updateCalorieUI();
 }
 
-// BARKOD OKUMA SİMÜLASYONU (VİDEO İÇİN ŞOV KISMI)
 function scanBarcode() {
     const btn = document.getElementById("barcode-btn");
     const originalText = btn.innerHTML;
     
-    // Taranıyor efekti
     btn.innerHTML = "<i class='fa-solid fa-camera scanner-line'></i> Taranıyor...";
     btn.classList.add("bg-green-600");
     btn.classList.remove("bg-gray-800");
 
     setTimeout(() => {
-        // Gerçekçi Ürün Veritabanı (Mock)
         const products = [
             { name: "Züber Fıstık Ezmeli Bar", cal: 175 },
             { name: "Eti Lifalif Yulaf Ezmesi", cal: 350 },
@@ -176,16 +216,14 @@ function scanBarcode() {
         
         const randomProduct = products[Math.floor(Math.random() * products.length)];
         
-        // Onay al ve ekle
         if(confirm(`📷 Barkod Başarıyla Okundu!\n\nÜrün: ${randomProduct.name}\nKalori: ${randomProduct.cal} kcal\n\nGünlük listene eklensin mi?`)) {
             addFood(randomProduct.name, randomProduct.cal);
         }
 
-        // Butonu eski haline getir
         btn.innerHTML = originalText;
         btn.classList.remove("bg-green-600");
         btn.classList.add("bg-gray-800");
-    }, 1500); // 1.5 saniyelik gerçekçi tarama süresi
+    }, 1500);
 }
 
 function resetDay() {
@@ -214,7 +252,7 @@ function updateProfile() {
     
     alert("Profil ve hedefler başarıyla güncellendi! Günlük kalori ihtiyacın aktivite seviyene göre yeniden hesaplandı.");
     loadDashboard();
-    switchTab('diet'); // Değişikliği görmesi için diyet sekmesine at
+    switchTab('diet');
 }
 
 function generateAIAdvice() {
