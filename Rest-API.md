@@ -1,25 +1,18 @@
-# REST API (Adil Mammadov)
+# FlexiFit Pro - REST API Dokümantasyonu
+**YouTube Sunum Linki:** [BURAYA VİDEO LİNKİNİ YAPIŞTIR]
+**Backend Domain:** https://flexifit-backend-thna.onrender.com
 
-**REST API Yayın Adresi:** https://flexifit-api.onrender.com
-**Proje Tanıtım ve Test Videosu:** [VİDEO LİNKİNİ BURAYA KOYACAKSIN]
+### API Metotları ve Gereksinim Eşleşmeleri
+| Gereksinim | Metot | Endpoint | Açıklama |
+| :--- | :--- | :--- | :--- |
+| Kayıt Ol | POST | `/auth/register` | Kullanıcı bilgilerini MongoDB'ye kaydeder. |
+| Giriş Yap | POST | `/auth/login` | Kimlik doğrulaması yapar. |
+| Tüketim Ekle | POST | `/api/consumption` | Yemek ve kalori verisini geçmişe ekler. |
+| Profil Görüntüle | GET | `/api/profile/<email>` | Boy, kilo ve kullanıcı verilerini getirir. |
+| Geçmişi Görüntüle | GET | `/api/history/<email>` | Tüm tüketim kaydını listeler. |
+| Mevcut Kiloyu Güncelle | PUT | `/api/update-weight` | Kullanıcının güncel ağırlığını değiştirir. |
+| Kaydı Sil | DELETE | `/api/delete-food` | Yanlış girilen besin kaydını siler. |
+| Hesabı Sil | DELETE | `/api/delete-account` | Tüm kullanıcı verilerini kalıcı olarak siler. |
+| Öğün Önerisi Al | GET | `/api/recommendation/<hour>` | Saate göre yapay zeka tavsiyesi verir. |
 
-## OpenAPI YAML Dosyası
-YAML Dosyası (OpenAPI 3.0): [openapi.yml](./openapi.yml)
-
-## Sorumlu Olduğum REST API Metotları
-
-Aşağıdaki metotlar tarafımdan tasarlanmış, geliştirilmiş ve Postman üzerinden test edilmiştir:
-
-### 1. Kullanıcı Kayıt İşlemi (Register)
-* **Yol (Endpoint):** `/auth/register`
-* **Metot:** `POST`
-* **Açıklama:** Yeni bir kullanıcının sisteme ad, soyad, e-posta, şifre ve fiziksel özellikleri ile kayıt olmasını sağlar.
-* **Request Body (JSON):**
-  ```json
-  {
-    "full_name": "Adil Mammadov",
-    "email": "memmedovadil2910@gmail.com",
-    "password": "123456",
-    "height": 180,
-    "weight": 80
-  }
+**Not:** Testler Postman üzerinden başarıyla gerçekleştirilmiştir. Koleksiyon dosyası repoda mevcuttur.
