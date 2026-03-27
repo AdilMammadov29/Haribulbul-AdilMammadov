@@ -1,5 +1,5 @@
 let isLoginMode = true;
-const API_URL = "https://flexifit-backend-thna.onrender.com";
+const API_URL = "https://flexifit-api.onrender.com";
 let currentUserEmail = localStorage.getItem("userEmail") || "";
 
 function toggleAuth() {
