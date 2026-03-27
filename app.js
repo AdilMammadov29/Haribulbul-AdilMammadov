@@ -1,4 +1,4 @@
-const API_URL = "https://flexifit-api.onrender.com"; // Senin gerçek Render linkin
+const API_URL = "https://flexifit-backend-thna.onrender.com";
 let isLoginMode = true;
 
 function toggleAuth() {
