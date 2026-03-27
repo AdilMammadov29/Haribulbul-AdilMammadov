@@ -1,5 +1,5 @@
 let isLoginMode = true;
-const API_URL = "https://flexifit-api.onrender.com"; // GERÇEK BACKEND ADRESİN
+const API_URL = "https://flexifit-backend-thna.onrender.com"; // GERÇEK BACKEND ADRESİN
 
 function toggleAuth() {
     isLoginMode = !isLoginMode;
