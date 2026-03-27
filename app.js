@@ -286,3 +286,23 @@ function logout() {
     localStorage.removeItem("userEmail");
     location.reload();
 }
+async function generateAIAdvice() {
+    const resEl = document.getElementById("ai-chat-result");
+    resEl.classList.remove("hidden"); // Gizli kutuyu aç
+    resEl.innerHTML = "<span class='text-gray-500 italic font-bold'><i class='fa-solid fa-spinner fa-spin mr-2'></i> AI Önerisi Hazırlanıyor...</span>";
+    
+    const currentHour = new Date().getHours();
+    
+    try {
+        const res = await fetch(`${API_URL}/api/recommendation/${currentHour}`);
+        const data = await res.json();
+        
+        if(res.ok) {
+            resEl.innerHTML = `<strong><i class='fa-solid fa-robot text-blue-500 mr-2 text-xl'></i> AI Önerisi (${data.meal}):</strong><br><br><span class='text-sm text-gray-700 font-medium'>${data.suggestion}</span>`;
+        } else {
+            resEl.innerHTML = "Sunucudan öneri alınamadı.";
+        }
+    } catch (error) {
+        resEl.innerHTML = "Bağlantı hatası: Backend çalışmıyor olabilir.";
+    }
+}
