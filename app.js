@@ -127,3 +127,20 @@ async function addFood() {
         alert("Yemek eklenirken hata oluştu.");
     }
 }
+const foodDatabase = {
+    "elma": 95, "muz": 105, "tavuk": 165, "makarna": 220, 
+    "pilav": 130, "yumurta": 78, "ekmek": 65, "pizza": 266, "kebap": 350
+};
+
+// Yemek ismini yazarken kaloriyi tahmin etme
+document.getElementById("food-name").addEventListener("input", function(e) {
+    const input = e.target.value.toLowerCase();
+    const calInput = document.getElementById("food-cal");
+    
+    if (foodDatabase[input]) {
+        calInput.value = foodDatabase[input];
+        calInput.classList.add("bg-green-100"); // Bulunca yeşil yakalım
+    } else {
+        calInput.classList.remove("bg-green-100");
+    }
+});
