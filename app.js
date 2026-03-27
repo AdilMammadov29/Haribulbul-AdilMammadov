@@ -100,3 +100,30 @@ function switchTab(tab) {
     document.getElementById(`tab-${tab}`).classList.remove('hidden');
     document.getElementById(`nav-${tab}`).classList.add('tab-active');
 }
+async function addFood() {
+    const name = document.getElementById("food-name").value;
+    const cal = document.getElementById("food-cal").value;
+    const email = localStorage.getItem("userEmail");
+
+    if(!name || !cal) {
+        alert("Lütfen yemek adını ve kalorisini girin!");
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_URL}/api/consumption`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, name, calories: parseInt(cal), water_ml: 0 })
+        });
+
+        if(res.ok) {
+            alert("Yemek başarıyla eklendi! ✅");
+            document.getElementById("food-name").value = "";
+            document.getElementById("food-cal").value = "";
+            // Buraya listeyi yenileme fonksiyonu eklenebilir
+        }
+    } catch (error) {
+        alert("Yemek eklenirken hata oluştu.");
+    }
+}
