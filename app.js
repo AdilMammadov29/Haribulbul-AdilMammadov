@@ -1,6 +1,6 @@
 let isLoginMode = true;
-// Render adresini doğru şekilde buraya koyduk
-const API_URL = "https://flexifit-backend-thna.onrender.com"; 
+const API_URL = "https://flexifit-backend-thna.onrender.com";
+let currentUserEmail = localStorage.getItem("userEmail") || "";
 
 function toggleAuth() {
     isLoginMode = !isLoginMode;
@@ -22,10 +22,10 @@ function toggleAuth() {
     }
 }
 
+// KAYIT OL VE GİRİŞ YAP (POST)
 async function handleAuth() {
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
-    
     if(!email || !password) return alert("Lütfen e-posta ve şifrenizi girin!");
 
     const endpoint = isLoginMode ? "/auth/login" : "/auth/register";
@@ -35,16 +35,9 @@ async function handleAuth() {
         const name = document.getElementById("fullname").value;
         const height = document.getElementById("height").value;
         const weight = document.getElementById("weight").value;
-        
         if(!name || !height || !weight) return alert("Ad, boy ve kilo zorunludur!");
         
-        bodyData = { 
-            full_name: name, 
-            email: email, 
-            password: password, 
-            height: parseInt(height), 
-            weight: parseInt(weight) 
-        };
+        bodyData = { full_name: name, email: email, password: password, height: parseInt(height), weight: parseInt(weight) };
     }
 
     const btn = document.getElementById("auth-btn");
@@ -62,16 +55,8 @@ async function handleAuth() {
         const data = await response.json();
 
         if (response.ok) {
-            if(!isLoginMode) {
-                localStorage.setItem("userName", bodyData.full_name);
-                localStorage.setItem("userHeight", bodyData.height);
-                localStorage.setItem("userWeight", bodyData.weight);
-                localStorage.setItem("userGoalWeight", bodyData.weight - 5);
-                localStorage.setItem("userActivity", "1.55");
-                localStorage.setItem("consumedCalories", 0);
-                localStorage.removeItem("foodListHTML");
-            }
-            
+            currentUserEmail = email;
+            localStorage.setItem("userEmail", email);
             document.getElementById("auth-section").classList.add("hidden");
             document.getElementById("dashboard-section").classList.remove("hidden");
             loadDashboard();
@@ -79,204 +64,225 @@ async function handleAuth() {
             alert("Hata: " + (data.error || data.message || "İşlem başarısız."));
         }
     } catch (error) {
-        alert("Sunucuya bağlanılamadı. CORS hatası olabilir veya API kapalı.");
-        console.error("API Bağlantı Hatası:", error);
+        alert("Sunucuya bağlanılamadı.");
     } finally {
         btn.innerText = originalText;
         btn.disabled = false;
     }
 }
 
-function switchTab(tab) {
-    ["home", "diet", "profile", "ai"].forEach(t => {
-        document.getElementById(`tab-${t}`).classList.add("hidden");
-        const navBtn = document.getElementById(`nav-${t}`);
-        navBtn.classList.remove("tab-active", "text-green-600");
-        navBtn.classList.add("text-gray-400");
-    });
-    document.getElementById(`tab-${tab}`).classList.remove("hidden");
-    const activeNav = document.getElementById(`nav-${tab}`);
-    activeNav.classList.add("tab-active", "text-green-600");
-    activeNav.classList.remove("text-gray-400");
-}
+// ÖZELLİKLERİ VE GEÇMİŞİ GÖRÜNTÜLE (GET)
+async function loadDashboard() {
+    if(!currentUserEmail) return logout();
 
-function loadDashboard() {
-    const name = localStorage.getItem("userName") || "Sporcu";
-    const weight = parseFloat(localStorage.getItem("userWeight")) || 80;
-    const height = parseFloat(localStorage.getItem("userHeight")) || 180;
-    const goalWeight = localStorage.getItem("userGoalWeight") || (weight - 5);
-    const activityLevel = parseFloat(localStorage.getItem("userActivity")) || 1.55;
-    
-    document.getElementById("home-name").innerText = name.split(" ")[0];
-    document.getElementById("p-name").value = name;
-    document.getElementById("p-weight").value = weight;
-    document.getElementById("p-height").value = height;
-    document.getElementById("p-goal").value = goalWeight;
-    document.getElementById("p-activity").value = activityLevel;
-
-    const bmr = (10 * weight) + (6.25 * height) - (5 * 25) + 5;
-    const dailyGoal = Math.round(bmr * activityLevel); 
-    localStorage.setItem("dailyGoal", dailyGoal);
-
-    const bmi = (weight / ((height/100)**2)).toFixed(1);
-    document.getElementById("home-bmi").innerText = bmi;
-
-    const savedList = localStorage.getItem("foodListHTML");
-    const listContainer = document.getElementById("food-list");
-    if(savedList) {
-        listContainer.innerHTML = savedList;
-    } else {
-        listContainer.innerHTML = `<p id="empty-food" class="text-xs text-gray-400 font-bold uppercase tracking-widest text-center mt-6">Bugün Kalori Alınmadı.</p>`;
-    }
-
-    updateCalorieUI();
-}
-
-function updateCalorieUI() {
-    const goal = parseInt(localStorage.getItem("dailyGoal")) || 2000;
-    const consumed = parseInt(localStorage.getItem("consumedCalories")) || 0;
-    const remaining = goal - consumed;
-    const percent = Math.min((consumed / goal) * 100, 100);
-
-    document.getElementById("cal-goal").innerText = goal;
-    document.getElementById("cal-consumed").innerText = consumed;
-    document.getElementById("cal-progress").style.width = percent + "%";
-    
-    const progressEl = document.getElementById("cal-progress");
-    const consumedEl = document.getElementById("cal-consumed");
-    const remainingEl = document.getElementById("cal-remaining");
-
-    if(consumed > goal) {
-        progressEl.classList.replace("from-green-400", "from-red-400");
-        progressEl.classList.replace("to-green-500", "to-red-500");
-        consumedEl.classList.replace("text-green-500", "text-red-500");
-        remainingEl.innerText = `LİMİT AŞILDI: ${Math.abs(remaining)} kcal`;
-        remainingEl.className = "text-xs font-bold text-white bg-red-500 px-3 py-1.5 rounded-lg border border-red-600";
-    } else {
-        progressEl.classList.replace("from-red-400", "from-green-400");
-        progressEl.classList.replace("to-red-500", "to-green-500");
-        consumedEl.classList.replace("text-red-500", "text-green-500");
-        remainingEl.innerText = `Kalan: ${remaining} kcal`;
-        remainingEl.className = "text-xs font-bold text-gray-500 bg-gray-50 border px-3 py-1.5 rounded-lg";
-    }
-
-    const homeSummary = document.getElementById("home-cal-summary");
-    if(homeSummary) homeSummary.innerText = `${consumed} / ${goal} kcal`;
-}
-
-function addFood(customName = null, customCal = null) {
-    const name = customName || document.getElementById("food-name").value;
-    const cal = customCal || document.getElementById("food-cal").value;
-    
-    if(!name || !cal) return alert("Yemek adı ve kalori girilmelidir!");
-
-    let consumed = parseInt(localStorage.getItem("consumedCalories")) || 0;
-    consumed += parseInt(cal);
-    localStorage.setItem("consumedCalories", consumed);
-
-    const emptyMsg = document.getElementById("empty-food");
-    if(emptyMsg) emptyMsg.remove();
-
-    const itemHTML = `<div class="flex justify-between items-center p-4 bg-white border border-gray-100 rounded-2xl shadow-sm transform transition hover:-translate-y-1 hover:shadow-md">
-                    <span class="text-gray-800 font-bold flex items-center"><i class="fa-solid fa-utensils text-green-400 mr-3 text-lg"></i> ${name}</span>
-                    <span class="font-black text-gray-800 text-lg">+${cal} <span class="text-xs text-gray-400 font-bold">kcal</span></span>
-                  </div>`;
-    
-    document.getElementById("food-list").insertAdjacentHTML('afterbegin', itemHTML);
-    localStorage.setItem("foodListHTML", document.getElementById("food-list").innerHTML);
-    
-    if(!customName) {
-        document.getElementById("food-name").value = "";
-        document.getElementById("food-cal").value = "";
-    }
-    updateCalorieUI();
-}
-
-function scanBarcode() {
-    const btn = document.getElementById("barcode-btn");
-    const originalText = btn.innerHTML;
-    
-    btn.innerHTML = "<i class='fa-solid fa-camera scanner-line'></i> Taranıyor...";
-    btn.classList.add("bg-green-600");
-    btn.classList.remove("bg-gray-800");
-
-    setTimeout(() => {
-        const products = [
-            { name: "Züber Fıstık Ezmeli Bar", cal: 175 },
-            { name: "Eti Lifalif Yulaf Ezmesi", cal: 350 },
-            { name: "Pınar Protein Süt Kakaolu", cal: 250 },
-            { name: "Torku Tam Yulaflı Bisküvi", cal: 420 },
-            { name: "Fellas Yüksek Protein Bar", cal: 145 }
-        ];
-        
-        const randomProduct = products[Math.floor(Math.random() * products.length)];
-        
-        if(confirm(`📷 Barkod Başarıyla Okundu!\n\nÜrün: ${randomProduct.name}\nKalori: ${randomProduct.cal} kcal\n\nGünlük listene eklensin mi?`)) {
-            addFood(randomProduct.name, randomProduct.cal);
+    try {
+        const profileRes = await fetch(`${API_URL}/api/profile/${currentUserEmail}`);
+        if (profileRes.ok) {
+            const profileData = await profileRes.json();
+            document.getElementById("home-name").innerText = profileData.full_name ? profileData.full_name.split(" ")[0] : "Sporcu";
+            if(document.getElementById("p-name")) document.getElementById("p-name").value = profileData.full_name || "";
+            if(document.getElementById("p-weight")) document.getElementById("p-weight").value = profileData.current_weight || profileData.weight || 80;
+            if(document.getElementById("p-height")) document.getElementById("p-height").value = profileData.height || 180;
         }
 
-        btn.innerHTML = originalText;
-        btn.classList.remove("bg-green-600");
-        btn.classList.add("bg-gray-800");
-    }, 1500);
-}
-
-function resetDay() {
-    if(confirm("Bugünün tüm kalori kayıtlarını sıfırlamak istiyor musun?")) {
-        localStorage.setItem("consumedCalories", 0);
-        localStorage.removeItem("foodListHTML");
-        document.getElementById("food-list").innerHTML = `<p id="empty-food" class="text-xs text-gray-400 font-bold uppercase tracking-widest text-center mt-6">Bugün Kalori Alınmadı.</p>`;
-        updateCalorieUI();
+        const historyRes = await fetch(`${API_URL}/api/history/${currentUserEmail}`);
+        if (historyRes.ok) {
+            const historyData = await historyRes.json();
+            renderFoodList(historyData);
+        }
+    } catch (error) {
+        console.error("Veriler yüklenirken hata oluştu:", error);
     }
 }
 
-function updateProfile() {
-    const newName = document.getElementById("p-name").value;
-    const newWeight = document.getElementById("p-weight").value;
-    const newHeight = document.getElementById("p-height").value;
-    const newGoal = document.getElementById("p-goal").value;
-    const newActivity = document.getElementById("p-activity").value;
-
-    if(!newName || !newWeight || !newHeight || !newGoal) return alert("Alanlar boş bırakılamaz!");
-
-    localStorage.setItem("userName", newName);
-    localStorage.setItem("userWeight", newWeight);
-    localStorage.setItem("userHeight", newHeight);
-    localStorage.setItem("userGoalWeight", newGoal);
-    localStorage.setItem("userActivity", newActivity);
+// GEÇMİŞİ LİSTELE VE SİLME BUTONU EKLE (GET & DELETE HAZIRLIĞI)
+function renderFoodList(historyArray) {
+    const listContainer = document.getElementById("food-list");
+    if(!historyArray || historyArray.length === 0) {
+        listContainer.innerHTML = `<p class="text-xs text-gray-400 font-bold uppercase tracking-widest text-center mt-6">Henüz kayıt yok.</p>`;
+        document.getElementById("cal-consumed").innerText = "0";
+        updateCalorieUI(0);
+        return;
+    }
     
-    alert("Profil ve hedefler başarıyla güncellendi! Günlük kalori ihtiyacın aktivite seviyene göre yeniden hesaplandı.");
-    loadDashboard();
-    switchTab('diet');
+    listContainer.innerHTML = "";
+    let totalCals = 0;
+    
+    historyArray.reverse().forEach(item => {
+        totalCals += parseInt(item.calories);
+        const div = document.createElement("div");
+        div.className = "flex justify-between items-center p-4 bg-white border border-gray-100 rounded-2xl shadow-sm mb-2";
+        div.innerHTML = `
+            <span class="text-gray-800 font-bold flex items-center"><i class="fa-solid fa-utensils text-green-400 mr-3 text-lg"></i> ${item.name}</span>
+            <div class="flex items-center gap-4">
+                <span class="font-black text-gray-800 text-lg">+${item.calories} <span class="text-xs text-gray-400 font-bold">kcal</span></span>
+                <button onclick="deleteFood('${item.name}')" class="text-red-500 hover:text-red-700 font-bold text-xl" title="Kaydı Sil">×</button>
+            </div>
+        `;
+        listContainer.appendChild(div);
+    });
+    
+    document.getElementById("cal-consumed").innerText = totalCals;
+    updateCalorieUI(totalCals);
 }
 
-function generateAIAdvice() {
-    const res = document.getElementById("ai-chat-result");
-    res.classList.remove("hidden");
-    res.innerHTML = "<span class='text-gray-500 italic font-bold'><i class='fa-solid fa-spinner fa-spin mr-2'></i> Verilerin işleniyor...</span>";
-    
-    const goal = parseInt(localStorage.getItem("dailyGoal")) || 2000;
-    const consumed = parseInt(localStorage.getItem("consumedCalories")) || 0;
+function updateCalorieUI(consumed) {
+    const goal = 2500; // Varsayılan hedef
     const remaining = goal - consumed;
-    const weight = localStorage.getItem("userWeight");
-    const targetWeight = localStorage.getItem("userGoalWeight");
-
-    let dynamicAdvice = "";
-    if (consumed === 0) {
-        dynamicAdvice = `Güne henüz başlamamışsın. ${targetWeight} kg hedefine ulaşman için bugün kalori bütçen tam ${goal} kcal. Sağlıklı bir kahvaltıyla start verelim! 🍳`;
-    } else if (remaining > 500) {
-        dynamicAdvice = `Şu ana kadar ${consumed} kcal aldın. Geriye ${remaining} kcal hakkın var. Akşam yemeğinde ızgara tavuk ve mevsim salata mükemmel bir tercih olur. 🥗`;
-    } else if (remaining > 0) {
-        dynamicAdvice = `Dikkatli ol, günlük sınırına çok yaklaştın! Sadece ${remaining} kcal hakkın kaldı. Eğer çok acıkırsan şekersiz yeşil çay ve 5-6 adet çiğ badem tüketebilirsin. 🍵`;
-    } else {
-        dynamicAdvice = `Günlük ${goal} kcal hedefini ${Math.abs(remaining)} kcal aştın. Moral bozmak yok! ${targetWeight} kg hedefini korumak için yarın antrenman süreni 15-20 dakika uzatarak bunu kolayca dengeleyebiliriz. 🏃‍♂️💪`;
+    const percent = Math.min((consumed / goal) * 100, 100);
+    
+    if(document.getElementById("cal-goal")) document.getElementById("cal-goal").innerText = goal;
+    if(document.getElementById("cal-progress")) document.getElementById("cal-progress").style.width = percent + "%";
+    
+    const remainingEl = document.getElementById("cal-remaining");
+    if(remainingEl) {
+        if(consumed > goal) {
+            remainingEl.innerText = `LİMİT AŞILDI: ${Math.abs(remaining)} kcal`;
+            remainingEl.className = "text-xs font-bold text-white bg-red-500 px-3 py-1.5 rounded-lg border border-red-600";
+        } else {
+            remainingEl.innerText = `Kalan: ${remaining} kcal`;
+            remainingEl.className = "text-xs font-bold text-gray-500 bg-gray-50 border px-3 py-1.5 rounded-lg";
+        }
     }
+}
 
-    setTimeout(() => {
-        res.innerHTML = "<strong><i class='fa-solid fa-bolt text-yellow-500 mr-2 text-xl'></i> AI Coach Analizi:</strong><br><br><span class='text-sm text-gray-700 leading-relaxed font-medium'>" + dynamicAdvice + "</span>";
+// TÜKETİM EKLE (POST)
+async function addFood(customName = null, customCal = null) {
+    const name = customName || document.getElementById("food-name").value;
+    const cal = customCal || document.getElementById("food-cal").value;
+    if(!name || !cal) return alert("Yemek adı ve kalori girilmelidir!");
+
+    try {
+        await fetch(`${API_URL}/api/consumption`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: currentUserEmail, name: name, calories: parseInt(cal) })
+        });
+        if(!customName) {
+            document.getElementById("food-name").value = "";
+            document.getElementById("food-cal").value = "";
+        }
+        loadDashboard(); // Listeyi buluttan yenile
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+// KAYDI SİL (DELETE)
+async function deleteFood(foodName) {
+    if(confirm(`"${foodName}" kaydını silmek istediğine emin misin?`)) {
+        try {
+            await fetch(`${API_URL}/api/delete-food`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: currentUserEmail, food_name: foodName })
+            });
+            loadDashboard(); // Listeyi buluttan yenile
+        } catch (error) { console.error(error); }
+    }
+}
+
+// HESABI SİL (DELETE) - Profil sekmesine buton eklersen çalışır
+async function deleteAccount() {
+    if(confirm("Tüm verilerini ve hesabını kalıcı olarak silmek istiyor musun?")) {
+        try {
+            await fetch(`${API_URL}/api/delete-account`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: currentUserEmail })
+            });
+            logout();
+        } catch (error) { console.error(error); }
+    }
+}
+
+// KİLO VE AKTİVİTE GÜNCELLE (UPDATE / PUT)
+async function updateProfile() {
+    const newWeight = document.getElementById("p-weight").value;
+    const newActivity = document.getElementById("p-activity") ? document.getElementById("p-activity").value : 1.55;
+
+    try {
+        await fetch(`${API_URL}/api/update-weight`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: currentUserEmail, new_weight: parseFloat(newWeight) })
+        });
+        await fetch(`${API_URL}/api/update-activity`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: currentUserEmail, new_activity: parseFloat(newActivity) })
+        });
+        alert("Profil bilgileri başarıyla güncellendi!");
+        loadDashboard();
+        switchTab('diet');
+    } catch (error) { console.error(error); }
+}
+
+// BARKOD TARA (GET)
+async function scanBarcode() {
+    const btn = document.getElementById("barcode-btn");
+    const originalText = btn.innerHTML;
+    btn.innerHTML = "<i class='fa-solid fa-camera scanner-line'></i> Taranıyor...";
+    
+    // Rastgele bir barkod seçip API'ye soralım
+    const mockBarcodes = ["8690504031200", "8690624200115", "HATA"];
+    const randomBarcode = mockBarcodes[Math.floor(Math.random() * mockBarcodes.length)];
+
+    setTimeout(async () => {
+        try {
+            const res = await fetch(`${API_URL}/api/barcode/${randomBarcode}`);
+            const data = await res.json();
+            
+            if(data.error) {
+                alert("Barkod sistemde bulunamadı!");
+            } else {
+                if(confirm(`📷 Ürün: ${data.name}\nKalori: ${data.calories} kcal\n\nGünlük listene eklensin mi?`)) {
+                    addFood(data.name, data.calories);
+                }
+            }
+        } catch(e) { console.error(e); }
+        btn.innerHTML = originalText;
     }, 1500);
+}
+
+// ÖĞÜN ÖNERİSİ AL (GET) - Saate göre yapay zeka
+async function generateAIAdvice() {
+    const resEl = document.getElementById("ai-chat-result");
+    resEl.classList.remove("hidden");
+    resEl.innerHTML = "<span class='text-gray-500 italic font-bold'><i class='fa-solid fa-spinner fa-spin mr-2'></i> API'den öneri alınıyor...</span>";
+    
+    const currentHour = new Date().getHours();
+    
+    try {
+        const res = await fetch(`${API_URL}/api/recommendation/${currentHour}`);
+        const data = await res.json();
+        
+        setTimeout(() => {
+            resEl.innerHTML = `<strong><i class='fa-solid fa-robot text-purple-500 mr-2 text-xl'></i> AI Önerisi (${data.meal}):</strong><br><br><span class='text-sm text-gray-700'>${data.suggestion}</span>`;
+        }, 1000);
+    } catch (error) {
+        resEl.innerHTML = "Öneri alınamadı.";
+    }
+}
+
+function switchTab(tab) {
+    ["home", "diet", "profile", "ai"].forEach(t => {
+        if(document.getElementById(`tab-${t}`)) document.getElementById(`tab-${t}`).classList.add("hidden");
+        const navBtn = document.getElementById(`nav-${t}`);
+        if(navBtn) {
+            navBtn.classList.remove("tab-active", "text-green-600");
+            navBtn.classList.add("text-gray-400");
+        }
+    });
+    if(document.getElementById(`tab-${tab}`)) document.getElementById(`tab-${tab}`).classList.remove("hidden");
+    const activeNav = document.getElementById(`nav-${tab}`);
+    if(activeNav) {
+        activeNav.classList.add("tab-active", "text-green-600");
+        activeNav.classList.remove("text-gray-400");
+    }
 }
 
 function logout() {
+    localStorage.removeItem("userEmail");
     location.reload();
 }
