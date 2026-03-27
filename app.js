@@ -100,6 +100,53 @@ function switchTab(tab) {
     document.getElementById(`tab-${tab}`).classList.remove('hidden');
     document.getElementById(`nav-${tab}`).classList.add('tab-active');
 }
+// --- 1. AI KALORİ TAHMİN EDİCİ (Yemek yazarken kaloriyi otomatik getirir) ---
+const foodDatabase = {
+    "elma": 95, "muz": 105, "tavuk": 165, "makarna": 220, 
+    "pilav": 130, "yumurta": 78, "ekmek": 65, "pizza": 266, 
+    "kebap": 350, "ayran": 40, "su": 0, "kahve": 2
+};
+
+// HTML'deki yemek ismi kutusuna bu özelliği bağlıyoruz
+document.getElementById("food-name")?.addEventListener("input", function(e) {
+    const input = e.target.value.toLowerCase().trim();
+    const calInput = document.getElementById("food-cal");
+    
+    if (foodDatabase[input] !== undefined) {
+        calInput.value = foodDatabase[input];
+        calInput.style.backgroundColor = "#dcfce7"; // Hafif yeşil yapalım (Bulundu!)
+    } else {
+        calInput.style.backgroundColor = "transparent";
+    }
+});
+
+// --- 2. BARKOD SİSTEMİ (Simüle edilmiş - Sunum için en güvenlisi) ---
+async function scanBarcode() {
+    const barcode = prompt("Lütfen ürün barkodunu girin\n(Örn: 8690504031200 - Yulaf Ezmesi için)");
+    
+    if (!barcode) return;
+
+    try {
+        // Senin Backend'indeki barkod rotasına gidiyoruz
+        const res = await fetch(`${API_URL}/api/barcode/${barcode}`);
+        const data = await res.json();
+        
+        if (res.ok && !data.error) {
+            document.getElementById("food-name").value = data.name;
+            document.getElementById("food-cal").value = data.calories;
+            alert(`✅ Ürün Bulundu: ${data.name}\n${data.calories} kcal eklendi.`);
+            
+            // Otomatik olarak listeye de eklesin mi? 
+            // addFood(); // İstersen bunu açabilirsin, direkt ekler.
+        } else {
+            alert("❌ Ürün veritabanında bulunamadı! Lütfen manuel girin.");
+        }
+    } catch (error) {
+        alert("Bağlantı hatası: Barkod servisine ulaşılamadı.");
+    }
+}
+
+// --- 3. YEMEK EKLEME FONKSİYONU (Eksik olan kısım) ---
 async function addFood() {
     const name = document.getElementById("food-name").value;
     const cal = document.getElementById("food-cal").value;
@@ -114,33 +161,22 @@ async function addFood() {
         const res = await fetch(`${API_URL}/api/consumption`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, name, calories: parseInt(cal), water_ml: 0 })
+            body: JSON.stringify({ 
+                email: email, 
+                name: name, 
+                calories: parseInt(cal), 
+                water_ml: 0 
+            })
         });
 
         if(res.ok) {
-            alert("Yemek başarıyla eklendi! ✅");
+            alert("Yemek başarıyla eklendi! 🥗");
             document.getElementById("food-name").value = "";
             document.getElementById("food-cal").value = "";
-            // Buraya listeyi yenileme fonksiyonu eklenebilir
+            // Sayfayı yenileyelim ki yeni yemek listede görünsün
+            location.reload(); 
         }
     } catch (error) {
-        alert("Yemek eklenirken hata oluştu.");
+        alert("Yemek eklenirken bir hata oluştu.");
     }
 }
-const foodDatabase = {
-    "elma": 95, "muz": 105, "tavuk": 165, "makarna": 220, 
-    "pilav": 130, "yumurta": 78, "ekmek": 65, "pizza": 266, "kebap": 350
-};
-
-// Yemek ismini yazarken kaloriyi tahmin etme
-document.getElementById("food-name").addEventListener("input", function(e) {
-    const input = e.target.value.toLowerCase();
-    const calInput = document.getElementById("food-cal");
-    
-    if (foodDatabase[input]) {
-        calInput.value = foodDatabase[input];
-        calInput.classList.add("bg-green-100"); // Bulunca yeşil yakalım
-    } else {
-        calInput.classList.remove("bg-green-100");
-    }
-});
