@@ -229,3 +229,49 @@ async function loadHistory() {
         console.log("Geçmiş yüklenirken hata oluştu.");
     }
 }
+// ... (diğer tüm fonksiyonlar: handleAuth, generateAIAdvice, addFood vb.)
+
+// --- 4. GEÇMİŞİ VE BARI GÜNCELLEME FONKSİYONU ---
+async function loadHistory() {
+    const email = localStorage.getItem("userEmail");
+    const listEl = document.getElementById("food-list");
+    if(!listEl || !email) return;
+
+    try {
+        const res = await fetch(`${API_URL}/api/history/${email}`);
+        const data = await res.json();
+        
+        if(Array.isArray(data)) {
+            listEl.innerHTML = ""; 
+            let totalCalories = 0;
+
+            data.forEach(item => {
+                totalCalories += item.calories;
+                listEl.innerHTML = `
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-green-100 p-2 rounded-lg text-green-600"><i class="fa-solid fa-utensils"></i></div>
+                            <div>
+                                <p class="font-bold text-gray-800">${item.name}</p>
+                                <p class="text-[10px] text-gray-400 font-bold uppercase">${item.date ? item.date.split(' ')[1].substring(0,5) : 'Şimdi'}</p>
+                            </div>
+                        </div>
+                        <span class="font-black text-green-500">${item.calories} kcal</span>
+                    </div>
+                ` + listEl.innerHTML;
+            });
+
+            // BARI VE RAKAMLARI HAREKET ETTİREN KISIM
+            const goal = 2000; 
+            const percent = Math.min((totalCalories / goal) * 100, 100);
+            const remaining = Math.max(goal - totalCalories, 0);
+
+            document.getElementById("cal-consumed").innerText = totalCalories;
+            document.getElementById("cal-remaining").innerText = `Kalan: ${remaining} kcal`;
+            document.getElementById("cal-progress").style.width = percent + "%";
+            document.getElementById("home-cal-summary").innerText = `${totalCalories} / ${goal} kcal`;
+        }
+    } catch (error) {
+        console.log("Veriler güncellenirken hata oluştu.");
+    }
+}
