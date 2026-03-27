@@ -1,3 +1,14 @@
+// Sayfa yüklendiğinde otomatik çalışır
+window.onload = function() {
+    const savedEmail = localStorage.getItem("userEmail");
+    if (savedEmail) {
+        // Eğer email varsa direkt dashboard'u göster
+        document.getElementById("auth-section").classList.add("hidden");
+        document.getElementById("dashboard-section").classList.remove("hidden");
+        // İsmi ve geçmişi yükle
+        loadHistory();
+    }
+};
 const API_URL = "https://flexifit-backend-thna.onrender.com";
 let isLoginMode = true;
 
@@ -147,6 +158,7 @@ async function scanBarcode() {
 }
 
 // --- 3. YEMEK EKLEME FONKSİYONU (Eksik olan kısım) ---
+// --- 3. YEMEK EKLEME FONKSİYONU (DÜZELTİLMİŞ HALİ) ---
 async function addFood() {
     const name = document.getElementById("food-name").value;
     const cal = document.getElementById("food-cal").value;
@@ -173,10 +185,47 @@ async function addFood() {
             alert("Yemek başarıyla eklendi! 🥗");
             document.getElementById("food-name").value = "";
             document.getElementById("food-cal").value = "";
-            // Sayfayı yenileyelim ki yeni yemek listede görünsün
-            location.reload(); 
+            
+            // DİKKAT: location.reload() SİLİNDİ!
+            // Sayfadan atılmamak için sadece listeyi yeniliyoruz:
+            loadHistory(); 
         }
     } catch (error) {
         alert("Yemek eklenirken bir hata oluştu.");
+    }
+}
+
+// --- 4. GEÇMİŞİ YÜKLEME FONKSİYONU (EKSİK OLAN KISIM) ---
+async function loadHistory() {
+    const email = localStorage.getItem("userEmail");
+    const listEl = document.getElementById("food-list");
+    if(!listEl || !email) return;
+
+    try {
+        const res = await fetch(`${API_URL}/api/history/${email}`);
+        const data = await res.json();
+        
+        if(Array.isArray(data)) {
+            listEl.innerHTML = ""; // Listeyi temizle
+            // Son ekleneni en üstte göstermek için reverse() kullanıyoruz
+            data.reverse().slice(0, 10).forEach(item => { 
+                listEl.innerHTML += `
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center mb-3 transition-all hover:shadow-md">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-green-100 p-2 rounded-lg text-green-600">
+                                <i class="fa-solid fa-utensils"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-gray-800">${item.name}</p>
+                                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">${item.date ? item.date.split(' ')[1].substring(0,5) : 'Şimdi'}</p>
+                            </div>
+                        </div>
+                        <span class="font-black text-green-500">${item.calories} kcal</span>
+                    </div>
+                `;
+            });
+        }
+    } catch (error) {
+        console.log("Geçmiş yüklenirken hata oluştu.");
     }
 }
