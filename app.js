@@ -1,17 +1,29 @@
-// Sayfa yüklendiğinde otomatik çalışır
-window.onload = function() {
-    const savedEmail = localStorage.getItem("userEmail");
-    if (savedEmail) {
-        // Eğer email varsa direkt dashboard'u göster
-        document.getElementById("auth-section").classList.add("hidden");
-        document.getElementById("dashboard-section").classList.remove("hidden");
-        // İsmi ve geçmişi yükle
-        loadHistory();
-    }
-};
 const API_URL = "https://flexifit-backend-thna.onrender.com";
 let isLoginMode = true;
+let myChart = null; // Grafik için gerekli değişken
 
+// ==========================================
+// 1. BAŞLANGIÇ AYARLARI (SAYFA YÜKLENDİĞİNDE)
+// ==========================================
+window.onload = function() {
+    // 1. Dark Mode Kontrolü
+    if (localStorage.getItem('theme') === 'dark') {
+        document.documentElement.classList.add('dark');
+    }
+    
+    // 2. Otomatik Giriş Kontrolü
+    const savedEmail = localStorage.getItem("userEmail");
+    if (savedEmail) {
+        document.getElementById("auth-section").classList.add("hidden");
+        document.getElementById("dashboard-section").classList.remove("hidden");
+        loadHistory();
+        setTimeout(renderWeeklyChart, 500); // Sayfa açılınca grafiği çiz
+    }
+};
+
+// ==========================================
+// 2. GİRİŞ VE KAYIT SİSTEMİ
+// ==========================================
 function toggleAuth() {
     isLoginMode = !isLoginMode;
     document.getElementById("form-title").innerText = isLoginMode ? "Sisteme Giriş Yap" : "Yeni Hesap Oluştur";
@@ -63,6 +75,8 @@ async function handleAuth() {
                 document.getElementById("auth-section").classList.add("hidden");
                 document.getElementById("dashboard-section").classList.remove("hidden");
                 document.getElementById("home-name").innerText = data.user?.full_name || "Kullanıcı";
+                loadHistory();
+                setTimeout(renderWeeklyChart, 500);
             }
         } else {
             alert("Hata: " + (data.error || "İşlem başarısız"));
@@ -74,7 +88,147 @@ async function handleAuth() {
     }
 }
 
-// ASIL AI FONKSİYONU BURADA (İSİM DÜZELTİLDİ)
+function logout() {
+    localStorage.removeItem("userEmail");
+    location.reload(); 
+}
+
+// ==========================================
+// 3. MENÜ (SEKME) GEÇİŞLERİ
+// ==========================================
+function switchTab(tab) {
+    const tabs = ['home', 'diet', 'ai', 'profile'];
+    tabs.forEach(t => {
+        document.getElementById(`tab-${t}`).classList.add('hidden');
+        document.getElementById(`nav-${t}`).classList.remove('tab-active');
+    });
+    document.getElementById(`tab-${tab}`).classList.remove('hidden');
+    document.getElementById(`nav-${tab}`).classList.add('tab-active');
+
+    // Eğer ana sayfaya dönüldüyse grafiği canlandır
+    if(tab === 'home') {
+        setTimeout(renderWeeklyChart, 100);
+    }
+}
+
+// ==========================================
+// 4. BESİN TAKİBİ, BARKOD VE KALORİ
+// ==========================================
+const foodDatabase = {
+    "elma": 95, "muz": 105, "tavuk": 165, "makarna": 220, 
+    "pilav": 130, "yumurta": 78, "ekmek": 65, "pizza": 266, 
+    "kebap": 350, "ayran": 40, "su": 0, "kahve": 2, "yulaf": 350
+};
+
+// Yazarken kaloriyi otomatik tahmin etme
+document.getElementById("food-name")?.addEventListener("input", function(e) {
+    const input = e.target.value.toLowerCase().trim();
+    const calInput = document.getElementById("food-cal");
+    
+    if (foodDatabase[input] !== undefined) {
+        calInput.value = foodDatabase[input];
+        calInput.style.backgroundColor = "#dcfce7"; 
+    } else {
+        calInput.style.backgroundColor = "transparent";
+    }
+});
+
+async function scanBarcode() {
+    const barcode = prompt("Lütfen ürün barkodunu girin\n(Örn: 8690504031200 - Yulaf Ezmesi için)");
+    if (!barcode) return;
+
+    try {
+        const res = await fetch(`${API_URL}/api/barcode/${barcode}`);
+        const data = await res.json();
+        
+        if (res.ok && !data.error) {
+            document.getElementById("food-name").value = data.name;
+            document.getElementById("food-cal").value = data.calories;
+            alert(`✅ Ürün Bulundu: ${data.name}\n${data.calories} kcal eklendi.`);
+        } else {
+            alert("❌ Ürün veritabanında bulunamadı! Lütfen manuel girin.");
+        }
+    } catch (error) {
+        alert("Bağlantı hatası: Barkod servisine ulaşılamadı.");
+    }
+}
+
+async function addFood() {
+    const name = document.getElementById("food-name").value;
+    const cal = document.getElementById("food-cal").value;
+    const email = localStorage.getItem("userEmail");
+
+    if(!name || !cal) {
+        alert("Lütfen yemek adını ve kalorisini girin!");
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_URL}/api/consumption`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: email, name: name, calories: parseInt(cal), water_ml: 0 })
+        });
+
+        if(res.ok) {
+            alert("Yemek başarıyla eklendi! 🥗");
+            document.getElementById("food-name").value = "";
+            document.getElementById("food-cal").value = "";
+            loadHistory(); 
+        }
+    } catch (error) {
+        alert("Yemek eklenirken bir hata oluştu.");
+    }
+}
+
+async function loadHistory() {
+    const email = localStorage.getItem("userEmail");
+    const listEl = document.getElementById("food-list");
+    if(!listEl || !email) return;
+
+    try {
+        const res = await fetch(`${API_URL}/api/history/${email}`);
+        const data = await res.json();
+        
+        if(Array.isArray(data)) {
+            listEl.innerHTML = ""; 
+            let totalCalories = 0;
+
+            // Yemekleri topla ve listeye bas (Son eklenen en üste)
+            data.slice().reverse().forEach(item => {
+                totalCalories += item.calories;
+                listEl.innerHTML += `
+                    <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex justify-between items-center mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-green-100 dark:bg-green-900 p-2 rounded-lg text-green-600 dark:text-green-400"><i class="fa-solid fa-utensils"></i></div>
+                            <div>
+                                <p class="font-bold text-gray-800 dark:text-white">${item.name}</p>
+                                <p class="text-[10px] text-gray-400 font-bold uppercase">${item.date ? item.date.split(' ')[1].substring(0,5) : 'Şimdi'}</p>
+                            </div>
+                        </div>
+                        <span class="font-black text-green-500">${item.calories} kcal</span>
+                    </div>
+                `;
+            });
+
+            // BARI VE RAKAMLARI GÜNCELLE
+            const goal = 2000; 
+            const percent = Math.min((totalCalories / goal) * 100, 100);
+            const remaining = Math.max(goal - totalCalories, 0);
+
+            document.getElementById("cal-consumed").innerText = totalCalories;
+            document.getElementById("cal-remaining").innerText = `Kalan: ${remaining} kcal`;
+            document.getElementById("cal-progress").style.width = percent + "%";
+            document.getElementById("home-cal-summary").innerText = `${totalCalories} / ${goal} kcal`;
+        }
+    } catch (error) {
+        console.log("Geçmiş yüklenirken hata oluştu.");
+    }
+}
+
+// ==========================================
+// 5. AI ANTRENÖR
+// ==========================================
 async function generateAIAdvice() {
     const resEl = document.getElementById("ai-chat-result");
     resEl.classList.remove("hidden");
@@ -96,182 +250,92 @@ async function generateAIAdvice() {
     }
 }
 
-function logout() {
-    localStorage.removeItem("userEmail");
-    location.reload(); // En temiz çıkış yolu
-}
+// ==========================================
+// 6. ŞOV KISMI: GRAFİK, DARK MODE VE PROFİL
+// ==========================================
 
-// Sekme Geçişleri (Bunu da ekledim eksik kalmasın)
-function switchTab(tab) {
-    const tabs = ['home', 'diet', 'ai', 'profile'];
-    tabs.forEach(t => {
-        document.getElementById(`tab-${t}`).classList.add('hidden');
-        document.getElementById(`nav-${t}`).classList.remove('tab-active');
-    });
-    document.getElementById(`tab-${tab}`).classList.remove('hidden');
-    document.getElementById(`nav-${tab}`).classList.add('tab-active');
-}
-// --- 1. AI KALORİ TAHMİN EDİCİ (Yemek yazarken kaloriyi otomatik getirir) ---
-const foodDatabase = {
-    "elma": 95, "muz": 105, "tavuk": 165, "makarna": 220, 
-    "pilav": 130, "yumurta": 78, "ekmek": 65, "pizza": 266, 
-    "kebap": 350, "ayran": 40, "su": 0, "kahve": 2
-};
-
-// HTML'deki yemek ismi kutusuna bu özelliği bağlıyoruz
-document.getElementById("food-name")?.addEventListener("input", function(e) {
-    const input = e.target.value.toLowerCase().trim();
-    const calInput = document.getElementById("food-cal");
+// --- DARK MODE GEÇİŞİ ---
+function toggleDarkMode() {
+    const htmlEl = document.documentElement;
+    htmlEl.classList.toggle('dark'); 
     
-    if (foodDatabase[input] !== undefined) {
-        calInput.value = foodDatabase[input];
-        calInput.style.backgroundColor = "#dcfce7"; // Hafif yeşil yapalım (Bulundu!)
-    } else {
-        calInput.style.backgroundColor = "transparent";
+    const isDark = htmlEl.classList.contains('dark');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    
+    // Tema değişince grafiği de güncelle
+    if(document.getElementById('calorieChart')) {
+        renderWeeklyChart(); 
     }
-});
+}
 
-// --- 2. BARKOD SİSTEMİ (Simüle edilmiş - Sunum için en güvenlisi) ---
-async function scanBarcode() {
-    const barcode = prompt("Lütfen ürün barkodunu girin\n(Örn: 8690504031200 - Yulaf Ezmesi için)");
-    
-    if (!barcode) return;
+// --- HAFTALIK GRAFİK (CHART.JS) ---
+async function renderWeeklyChart() {
+    const email = localStorage.getItem("userEmail");
+    const ctx = document.getElementById('calorieChart');
+    if(!ctx || !email) return;
 
     try {
-        // Senin Backend'indeki barkod rotasına gidiyoruz
-        const res = await fetch(`${API_URL}/api/barcode/${barcode}`);
-        const data = await res.json();
-        
-        if (res.ok && !data.error) {
-            document.getElementById("food-name").value = data.name;
-            document.getElementById("food-cal").value = data.calories;
-            alert(`✅ Ürün Bulundu: ${data.name}\n${data.calories} kcal eklendi.`);
-            
-            // Otomatik olarak listeye de eklesin mi? 
-            // addFood(); // İstersen bunu açabilirsin, direkt ekler.
-        } else {
-            alert("❌ Ürün veritabanında bulunamadı! Lütfen manuel girin.");
-        }
+        // Senin Backend'deki endpoint'i kullanıyoruz!
+        const res = await fetch(`${API_URL}/api/weekly-summary/${email}`);
+        const data = await res.json(); 
+
+        const dates = Object.keys(data).slice(-7); 
+        const calories = Object.values(data).slice(-7);
+
+        const isDark = document.documentElement.classList.contains('dark');
+        const textColor = isDark ? '#e5e7eb' : '#374151';
+
+        if (myChart) myChart.destroy(); // Eski grafiği sil (üst üste binmemesi için)
+
+        myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'Günlük Alınan Kalori',
+                    data: calories,
+                    backgroundColor: '#4ade80',
+                    borderRadius: 8
+                }]
+            },
+            options: { 
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: textColor } } },
+                scales: {
+                    y: { ticks: { color: textColor }, grid: { color: isDark ? '#374151' : '#f3f4f6' } },
+                    x: { ticks: { color: textColor }, grid: { display: false } }
+                }
+            }
+        });
     } catch (error) {
-        alert("Bağlantı hatası: Barkod servisine ulaşılamadı.");
+        console.log("Grafik verisi çekilemedi.");
     }
 }
 
-// --- 3. YEMEK EKLEME FONKSİYONU (Eksik olan kısım) ---
-// --- 3. YEMEK EKLEME FONKSİYONU (DÜZELTİLMİŞ HALİ) ---
-async function addFood() {
-    const name = document.getElementById("food-name").value;
-    const cal = document.getElementById("food-cal").value;
+// --- PROFİL KAYDETME FONKSİYONU ---
+async function updateProfile() {
     const email = localStorage.getItem("userEmail");
-
-    if(!name || !cal) {
-        alert("Lütfen yemek adını ve kalorisini girin!");
+    const newWeight = document.getElementById("p-weight").value;
+    
+    if(!newWeight) {
+        alert("Lütfen kilonuzu girin!");
         return;
     }
 
     try {
-        const res = await fetch(`${API_URL}/api/consumption`, {
-            method: "POST",
+        const res = await fetch(`${API_URL}/api/update-weight`, {
+            method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-                email: email, 
-                name: name, 
-                calories: parseInt(cal), 
-                water_ml: 0 
-            })
+            body: JSON.stringify({ email: email, new_weight: parseFloat(newWeight) })
         });
 
         if(res.ok) {
-            alert("Yemek başarıyla eklendi! 🥗");
-            document.getElementById("food-name").value = "";
-            document.getElementById("food-cal").value = "";
-            
-            // DİKKAT: location.reload() SİLİNDİ!
-            // Sayfadan atılmamak için sadece listeyi yeniliyoruz:
-            loadHistory(); 
+            alert("Harika! Profil bilgilerin (Kilo) başarıyla güncellendi. 💪");
+        } else {
+            alert("Güncelleme başarısız oldu.");
         }
     } catch (error) {
-        alert("Yemek eklenirken bir hata oluştu.");
-    }
-}
-
-// --- 4. GEÇMİŞİ YÜKLEME FONKSİYONU (EKSİK OLAN KISIM) ---
-async function loadHistory() {
-    const email = localStorage.getItem("userEmail");
-    const listEl = document.getElementById("food-list");
-    if(!listEl || !email) return;
-
-    try {
-        const res = await fetch(`${API_URL}/api/history/${email}`);
-        const data = await res.json();
-        
-        if(Array.isArray(data)) {
-            listEl.innerHTML = ""; // Listeyi temizle
-            // Son ekleneni en üstte göstermek için reverse() kullanıyoruz
-            data.reverse().slice(0, 10).forEach(item => { 
-                listEl.innerHTML += `
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center mb-3 transition-all hover:shadow-md">
-                        <div class="flex items-center gap-3">
-                            <div class="bg-green-100 p-2 rounded-lg text-green-600">
-                                <i class="fa-solid fa-utensils"></i>
-                            </div>
-                            <div>
-                                <p class="font-bold text-gray-800">${item.name}</p>
-                                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">${item.date ? item.date.split(' ')[1].substring(0,5) : 'Şimdi'}</p>
-                            </div>
-                        </div>
-                        <span class="font-black text-green-500">${item.calories} kcal</span>
-                    </div>
-                `;
-            });
-        }
-    } catch (error) {
-        console.log("Geçmiş yüklenirken hata oluştu.");
-    }
-}
-// ... (diğer tüm fonksiyonlar: handleAuth, generateAIAdvice, addFood vb.)
-
-// --- 4. GEÇMİŞİ VE BARI GÜNCELLEME FONKSİYONU ---
-async function loadHistory() {
-    const email = localStorage.getItem("userEmail");
-    const listEl = document.getElementById("food-list");
-    if(!listEl || !email) return;
-
-    try {
-        const res = await fetch(`${API_URL}/api/history/${email}`);
-        const data = await res.json();
-        
-        if(Array.isArray(data)) {
-            listEl.innerHTML = ""; 
-            let totalCalories = 0;
-
-            data.forEach(item => {
-                totalCalories += item.calories;
-                listEl.innerHTML = `
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center mb-3">
-                        <div class="flex items-center gap-3">
-                            <div class="bg-green-100 p-2 rounded-lg text-green-600"><i class="fa-solid fa-utensils"></i></div>
-                            <div>
-                                <p class="font-bold text-gray-800">${item.name}</p>
-                                <p class="text-[10px] text-gray-400 font-bold uppercase">${item.date ? item.date.split(' ')[1].substring(0,5) : 'Şimdi'}</p>
-                            </div>
-                        </div>
-                        <span class="font-black text-green-500">${item.calories} kcal</span>
-                    </div>
-                ` + listEl.innerHTML;
-            });
-
-            // BARI VE RAKAMLARI HAREKET ETTİREN KISIM
-            const goal = 2000; 
-            const percent = Math.min((totalCalories / goal) * 100, 100);
-            const remaining = Math.max(goal - totalCalories, 0);
-
-            document.getElementById("cal-consumed").innerText = totalCalories;
-            document.getElementById("cal-remaining").innerText = `Kalan: ${remaining} kcal`;
-            document.getElementById("cal-progress").style.width = percent + "%";
-            document.getElementById("home-cal-summary").innerText = `${totalCalories} / ${goal} kcal`;
-        }
-    } catch (error) {
-        console.log("Veriler güncellenirken hata oluştu.");
+        alert("Sunucuya bağlanılamadı.");
     }
 }
