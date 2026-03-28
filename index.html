@@ -46,11 +46,24 @@
             
             <div id="register-fields" class="hidden space-y-4 mb-4">
                 <input type="text" id="fullname" placeholder="Ad Soyad" class="w-full p-4 rounded-xl bg-fscard text-white border border-gray-800 focus:border-fsgreen transition">
+                
+                <div class="flex gap-4">
+                    <div class="flex-1">
+                        <label class="text-[10px] text-fsmuted font-bold uppercase ml-1">Boy (cm)</label>
+                        <input type="number" id="height" placeholder="180" class="w-full p-4 mt-1 rounded-xl bg-fscard text-white border border-gray-800 focus:border-fsgreen transition">
+                    </div>
+                    <div class="flex-1">
+                        <label class="text-[10px] text-fsmuted font-bold uppercase ml-1">Kilo (kg)</label>
+                        <input type="number" id="weight" placeholder="75" class="w-full p-4 mt-1 rounded-xl bg-fscard text-white border border-gray-800 focus:border-fsgreen transition">
+                    </div>
+                </div>
             </div>
+
             <div class="space-y-4 mb-8">
                 <input type="email" id="email" placeholder="E-posta Adresi" class="w-full p-4 rounded-xl bg-fscard text-white border border-gray-800 focus:border-fsgreen transition">
                 <input type="password" id="password" placeholder="Şifre" class="w-full p-4 rounded-xl bg-fscard text-white border border-gray-800 focus:border-fsgreen transition">
             </div>
+            
             <button id="auth-btn" onclick="handleAuth()" class="w-full bg-fsgreen text-black font-black py-4 rounded-xl hover:bg-green-400 transition shadow-[0_0_15px_rgba(36,209,100,0.3)]">GİRİŞ YAP</button>
             <button type="button" class="mt-6 text-sm text-center text-fsmuted font-bold hover:text-white w-full transition" onclick="toggleAuth()" id="toggle-link">Hesabın yok mu? Yeni Hesap Oluştur</button>
         </div>
@@ -128,7 +141,6 @@
                             <i class="fa-solid fa-barcode"></i> Barkod ile Tarat
                         </button>
                     </div>
-                    
                     <h4 class="text-xs font-bold text-fsmuted uppercase tracking-widest mb-3 px-2">Tüketilenler</h4>
                     <div id="food-list" class="space-y-2 pb-4"></div>
                 </div>
@@ -219,24 +231,15 @@
                     <h4 class="text-[11px] font-black text-white uppercase tracking-widest mb-2 ml-1">TERCİHLER & GÜNLÜK</h4>
                     <div class="bg-fscard rounded-xl border border-gray-800 overflow-hidden mb-8">
                         <div class="p-4 border-b border-gray-800 flex justify-between items-center cursor-pointer hover:bg-[#1e293b] transition" onclick="editField('region', 'Bölge')">
-                            <div>
-                                <p class="text-white font-bold text-sm">Bölge</p>
-                                <p id="prof-region" class="text-fsgreen text-sm font-bold mt-1">Türkiye</p>
-                            </div>
+                            <div><p class="text-white font-bold text-sm">Bölge</p><p id="prof-region" class="text-fsgreen text-sm font-bold mt-1">Türkiye</p></div>
                             <i class="fa-solid fa-pen text-fsmuted text-xs"></i>
                         </div>
                         <div class="p-4 border-b border-gray-800 flex justify-between items-center cursor-pointer hover:bg-[#1e293b] transition" onclick="editField('lang', 'Uygulama Dili')">
-                            <div>
-                                <p class="text-white font-bold text-sm">Uygulama Dili</p>
-                                <p id="prof-lang" class="text-fsgreen text-sm font-bold mt-1">Türkçe</p>
-                            </div>
+                            <div><p class="text-white font-bold text-sm">Uygulama Dili</p><p id="prof-lang" class="text-fsgreen text-sm font-bold mt-1">Türkçe</p></div>
                             <i class="fa-solid fa-pen text-fsmuted text-xs"></i>
                         </div>
-                        <div class="p-4 flex justify-between items-center cursor-pointer hover:bg-[#1e293b] transition" onclick="editField('target', 'Hedef Kalori (TGD)')">
-                            <div>
-                                <p class="text-white font-bold text-sm">TGD (Günlük Hedef)</p>
-                                <p id="prof-target" class="text-fsgreen text-sm font-bold mt-1">2000 kalori</p>
-                            </div>
+                        <div class="p-4 flex justify-between items-center cursor-pointer hover:bg-[#1e293b] transition" onclick="editField('target', 'Hedef Kalori')">
+                            <div><p class="text-white font-bold text-sm">TGD (Hedef)</p><p id="prof-target" class="text-fsgreen text-sm font-bold mt-1">2000 kalori</p></div>
                             <i class="fa-solid fa-pen text-fsmuted text-xs"></i>
                         </div>
                     </div>
@@ -245,30 +248,14 @@
             </div>
 
             <div class="bg-[#0B101E] border-t border-gray-800 absolute bottom-0 w-full h-[70px] flex justify-around items-center z-20 pb-2 pt-1">
-                <button onclick="switchTab('home')" id="nav-home" class="flex flex-col items-center tab-active w-1/5 transition">
-                    <i class="fa-solid fa-leaf text-2xl mb-1"></i>
-                    <span class="text-[10px] font-bold">Özet</span>
-                </button>
-                <button onclick="switchTab('diet')" id="nav-diet" class="flex flex-col items-center text-fsmuted w-1/5 transition hover:text-white">
-                    <i class="fa-solid fa-book-open text-2xl mb-1"></i>
-                    <span class="text-[10px] font-bold">Günlük</span>
-                </button>
-                <button onclick="switchTab('reports')" id="nav-reports" class="flex flex-col items-center text-fsmuted w-1/5 transition hover:text-white">
-                    <i class="fa-solid fa-chart-simple text-2xl mb-1"></i>
-                    <span class="text-[10px] font-bold">Raporlar</span>
-                </button>
-                <button onclick="switchTab('ai')" id="nav-ai" class="flex flex-col items-center text-fsmuted w-1/5 transition hover:text-white">
-                    <i class="fa-solid fa-robot text-2xl mb-1"></i>
-                    <span class="text-[10px] font-bold">AI Coach</span>
-                </button>
-                <button onclick="switchTab('profile')" id="nav-profile" class="flex flex-col items-center text-fsmuted w-1/5 transition hover:text-white">
-                    <i class="fa-solid fa-user text-2xl mb-1"></i>
-                    <span class="text-[10px] font-bold">Ben</span>
-                </button>
+                <button onclick="switchTab('home')" id="nav-home" class="flex flex-col items-center tab-active w-1/5 transition"><i class="fa-solid fa-leaf text-2xl mb-1"></i><span class="text-[10px] font-bold">Özet</span></button>
+                <button onclick="switchTab('diet')" id="nav-diet" class="flex flex-col items-center text-fsmuted w-1/5 transition hover:text-white"><i class="fa-solid fa-book-open text-2xl mb-1"></i><span class="text-[10px] font-bold">Günlük</span></button>
+                <button onclick="switchTab('reports')" id="nav-reports" class="flex flex-col items-center text-fsmuted w-1/5 transition hover:text-white"><i class="fa-solid fa-chart-simple text-2xl mb-1"></i><span class="text-[10px] font-bold">Raporlar</span></button>
+                <button onclick="switchTab('ai')" id="nav-ai" class="flex flex-col items-center text-fsmuted w-1/5 transition hover:text-white"><i class="fa-solid fa-robot text-2xl mb-1"></i><span class="text-[10px] font-bold">AI Coach</span></button>
+                <button onclick="switchTab('profile')" id="nav-profile" class="flex flex-col items-center text-fsmuted w-1/5 transition hover:text-white"><i class="fa-solid fa-user text-2xl mb-1"></i><span class="text-[10px] font-bold">Ben</span></button>
             </div>
         </div>
     </div>
-    
     <script src="app2.js"></script>
 </body>
 </html>
