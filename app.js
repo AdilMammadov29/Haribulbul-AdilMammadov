@@ -6,10 +6,7 @@ let myChart = null;
 // 1. BAŞLANGIÇ AYARLARI 
 // ==========================================
 window.onload = function() {
-    if (localStorage.getItem('theme') === 'dark') {
-        document.documentElement.classList.add('dark');
-    }
-    
+    // Tema artık sabit koyu olduğu için dark mode kontrolünü sildik, direkt yüklemeye geçiyoruz.
     const savedEmail = localStorage.getItem("userEmail");
     if (savedEmail) {
         document.getElementById("auth-section").classList.add("hidden");
@@ -99,9 +96,18 @@ function switchTab(tab) {
     tabs.forEach(t => {
         document.getElementById(`tab-${t}`).classList.add('hidden');
         document.getElementById(`nav-${t}`).classList.remove('tab-active');
+        
+        // Fatsecret alt barı için ikonların rengini yönetelim
+        const btn = document.getElementById(`nav-${t}`);
+        if(btn) btn.classList.remove('text-fsgreen');
     });
+    
     document.getElementById(`tab-${tab}`).classList.remove('hidden');
-    document.getElementById(`nav-${tab}`).classList.add('tab-active');
+    const activeBtn = document.getElementById(`nav-${tab}`);
+    if(activeBtn) {
+        activeBtn.classList.add('tab-active');
+        activeBtn.classList.add('text-fsgreen');
+    }
 
     if(tab === 'home') setTimeout(renderWeeklyChart, 100);
 }
@@ -121,9 +127,9 @@ document.getElementById("food-name")?.addEventListener("input", function(e) {
     
     if (foodDatabase[input] !== undefined) {
         calInput.value = foodDatabase[input];
-        calInput.style.backgroundColor = "#dcfce7"; 
+        calInput.classList.add("text-fsgreen"); 
     } else {
-        calInput.style.backgroundColor = "transparent";
+        calInput.classList.remove("text-fsgreen");
     }
 });
 
@@ -200,7 +206,7 @@ async function deleteFood(foodName) {
     }
 }
 
-// --- LİSTE, ÇÖP KUTUSU VE BAR GÜNCELLEME ---
+// --- LİSTE, ÇÖP KUTUSU VE BAR GÜNCELLEME (FATSECRET TEMASI) ---
 async function loadHistory() {
     const email = localStorage.getItem("userEmail");
     const listEl = document.getElementById("food-list");
@@ -217,18 +223,18 @@ async function loadHistory() {
             data.slice().reverse().forEach(item => {
                 totalCalories += item.calories;
                 listEl.innerHTML += `
-                    <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex justify-between items-center mb-3 group">
+                    <div class="bg-fscard p-4 rounded-2xl border border-gray-800 flex justify-between items-center mb-3 group">
                         <div class="flex items-center gap-3">
-                            <div class="bg-green-100 dark:bg-green-900 p-2 rounded-lg text-green-600 dark:text-green-400"><i class="fa-solid fa-utensils"></i></div>
+                            <div class="bg-[#1e293b] p-2 rounded-lg text-fsgreen"><i class="fa-solid fa-utensils"></i></div>
                             <div>
-                                <p class="font-bold text-gray-800 dark:text-white">${item.name}</p>
-                                <p class="text-[10px] text-gray-400 font-bold uppercase">${item.date ? item.date.split(' ')[1].substring(0,5) : 'Şimdi'}</p>
+                                <p class="font-bold text-white">${item.name}</p>
+                                <p class="text-[10px] text-fsmuted font-bold uppercase">${item.date ? item.date.split(' ')[1].substring(0,5) : 'Şimdi'}</p>
                             </div>
                         </div>
                         
                         <div class="flex items-center gap-4">
-                            <span class="font-black text-green-500">${item.calories} kcal</span>
-                            <button onclick="deleteFood('${item.name}')" class="text-gray-300 dark:text-gray-600 hover:text-red-500 transition" title="Bu öğünü sil">
+                            <span class="font-black text-fsgreen">${item.calories} kcal</span>
+                            <button onclick="deleteFood('${item.name}')" class="text-fsmuted hover:text-red-500 transition" title="Bu öğünü sil">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
                         </div>
@@ -240,10 +246,11 @@ async function loadHistory() {
             const percent = Math.min((totalCalories / goal) * 100, 100);
             const remaining = Math.max(goal - totalCalories, 0);
 
-            document.getElementById("cal-consumed").innerText = totalCalories;
-            document.getElementById("cal-remaining").innerText = `Kalan: ${remaining} kcal`;
-            document.getElementById("cal-progress").style.width = percent + "%";
-            document.getElementById("home-cal-summary").innerText = `${totalCalories} / ${goal} kcal`;
+            // Dashboard Değerlerini Güncelle
+            if(document.getElementById("cal-consumed")) document.getElementById("cal-consumed").innerText = totalCalories;
+            if(document.getElementById("cal-remaining")) document.getElementById("cal-remaining").innerText = remaining;
+            if(document.getElementById("cal-progress")) document.getElementById("cal-progress").style.width = percent + "%";
+            if(document.getElementById("home-cal-summary")) document.getElementById("home-cal-summary").innerText = `${totalCalories} / ${goal} kcal`;
         }
     } catch (error) {
         console.log("Geçmiş yüklenirken hata oluştu.");
@@ -256,7 +263,7 @@ async function loadHistory() {
 async function generateAIAdvice() {
     const resEl = document.getElementById("ai-chat-result");
     resEl.classList.remove("hidden");
-    resEl.innerHTML = "<div class='flex items-center gap-2'><i class='fa-solid fa-spinner fa-spin'></i> <span>Yapay Zeka analiz yapıyor...</span></div>";
+    resEl.innerHTML = "<div class='flex items-center gap-2 text-fsmuted'><i class='fa-solid fa-spinner fa-spin text-fsgreen'></i> <span>Yapay Zeka analiz yapıyor...</span></div>";
     
     const hour = new Date().getHours();
     
@@ -265,7 +272,7 @@ async function generateAIAdvice() {
         const data = await res.json();
         
         if(res.ok) {
-            resEl.innerHTML = `<strong><i class='fa-solid fa-robot text-blue-500 mr-2'></i> AI Antrenör (${data.meal}):</strong><br><br>${data.suggestion}`;
+            resEl.innerHTML = `<strong><i class='fa-solid fa-robot text-fsgreen mr-2'></i> AI Antrenör (${data.meal}):</strong><br><br><span class="text-white">${data.suggestion}</span>`;
         } else {
             resEl.innerHTML = "Öneri alınamadı.";
         }
@@ -275,18 +282,8 @@ async function generateAIAdvice() {
 }
 
 // ==========================================
-// 6. ŞOV KISMI: GRAFİK, DARK MODE VE PROFİL
+// 6. ŞOV KISMI: GRAFİK VE PROFİL
 // ==========================================
-function toggleDarkMode() {
-    const htmlEl = document.documentElement;
-    htmlEl.classList.toggle('dark'); 
-    
-    const isDark = htmlEl.classList.contains('dark');
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
-    
-    if(document.getElementById('calorieChart')) renderWeeklyChart(); 
-}
-
 async function renderWeeklyChart() {
     const email = localStorage.getItem("userEmail");
     const ctx = document.getElementById('calorieChart');
@@ -299,8 +296,9 @@ async function renderWeeklyChart() {
         const dates = Object.keys(data).slice(-7); 
         const calories = Object.values(data).slice(-7);
 
-        const isDark = document.documentElement.classList.contains('dark');
-        const textColor = isDark ? '#e5e7eb' : '#374151';
+        // FatSecret Teması Renkleri
+        const textColor = '#E2E8F0'; // Açık Gri
+        const gridColor = '#1e293b'; // Koyu Çizgiler
 
         if (myChart) myChart.destroy(); 
 
@@ -311,7 +309,7 @@ async function renderWeeklyChart() {
                 datasets: [{
                     label: 'Günlük Alınan Kalori',
                     data: calories,
-                    backgroundColor: '#4ade80',
+                    backgroundColor: '#24D164', // FatSecret Yeşili
                     borderRadius: 8
                 }]
             },
@@ -320,7 +318,7 @@ async function renderWeeklyChart() {
                 maintainAspectRatio: false,
                 plugins: { legend: { labels: { color: textColor } } },
                 scales: {
-                    y: { ticks: { color: textColor }, grid: { color: isDark ? '#374151' : '#f3f4f6' } },
+                    y: { ticks: { color: textColor }, grid: { color: gridColor } },
                     x: { ticks: { color: textColor }, grid: { display: false } }
                 }
             }
