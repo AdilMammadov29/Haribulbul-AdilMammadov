@@ -2,102 +2,121 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlexiFit Pro | Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FlexiFit Pro | FatSecret UI</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <script>
         tailwind.config = {
-            darkMode: 'class', // Karanlık modun çalışması için bu şart
+            theme: {
+                extend: {
+                    colors: {
+                        fsbg: '#0B101E', // FatSecret Arka Plan
+                        fscard: '#151C2C', // FatSecret Kartlar
+                        fsgreen: '#24D164', // FatSecret Yeşil
+                        fstext: '#E2E8F0', // Açık Gri Metin
+                        fsmuted: '#64748B' // Koyu Gri İkon/Metin
+                    }
+                }
+            }
         }
     </script>
     <style>
+        body { background-color: #000; color: #E2E8F0; }
         .hidden { display: none !important; }
-        .tab-active { color: #22c55e; border-top: 3px solid #22c55e; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        /* FatSecret Bottom Nav Aktif Rengi */
+        .tab-active { color: #24D164 !important; }
         
-        @keyframes scan {
-            0% { transform: translateY(-10px); opacity: 0; }
-            50% { opacity: 1; }
-            100% { transform: translateY(10px); opacity: 0; }
-        }
-        .scanner-line { animation: scan 1s infinite linear; }
+        /* Şık Scrollbar */
+        ::-webkit-scrollbar { width: 0px; }
+        
+        /* Input focus olduğunda kenarlık rengi */
+        input:focus, select:focus { outline: none; border-color: #24D164 !important; }
     </style>
 </head>
-<body class="bg-gradient-to-br from-green-50 via-gray-100 to-green-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center min-h-screen font-sans transition-colors duration-500">
+<body class="flex items-center justify-center min-h-screen font-sans">
     
-    <div class="bg-white dark:bg-gray-800 h-[750px] w-full max-w-md shadow-2xl relative overflow-hidden flex flex-col rounded-[2.5rem] border-[6px] border-gray-900 transition-colors duration-500">
+    <div class="bg-fsbg w-full max-w-md h-[100dvh] sm:h-[850px] sm:rounded-[2.5rem] sm:border-[8px] sm:border-gray-900 relative overflow-hidden flex flex-col shadow-2xl">
         
-        <div id="auth-section" class="p-8 flex-1 flex flex-col justify-center relative">
-            
-            <div class="flex justify-center mb-6">
-                <div class="bg-gradient-to-tr from-green-400 to-green-600 w-24 h-24 rounded-full shadow-xl flex items-center justify-center transform transition duration-500 hover:rotate-12 border-4 border-white dark:border-gray-800">
-                    <i class="fa-solid fa-leaf text-5xl text-white"></i>
+        <div id="auth-section" class="p-8 flex-1 flex flex-col justify-center relative z-10">
+            <div class="flex justify-center mb-8">
+                <div class="bg-fscard w-28 h-28 rounded-3xl shadow-2xl flex items-center justify-center border border-gray-800 transform rotate-3">
+                    <i class="fa-solid fa-leaf text-6xl text-fsgreen drop-shadow-lg"></i>
                 </div>
             </div>
             
-            <h2 class="text-4xl font-black text-center mb-2 text-gray-800 dark:text-white tracking-tight">FlexiFit Pro</h2>
-            <h3 id="form-title" class="text-xs font-bold text-gray-400 dark:text-gray-500 mb-8 text-center uppercase tracking-widest">Sisteme Giriş Yap</h3>
+            <h2 class="text-3xl font-black text-center mb-2 text-white tracking-wide">FlexiFit <span class="text-fsgreen">Pro</span></h2>
+            <h3 id="form-title" class="text-xs font-bold text-fsmuted mb-10 text-center uppercase tracking-widest">Sisteme Giriş Yap</h3>
             
-            <div id="register-fields" class="hidden">
-                <input type="text" id="fullname" placeholder="Ad Soyad" class="w-full p-4 mb-4 border border-gray-100 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-green-400 focus:outline-none transition">
-                <div class="flex gap-4 mb-4">
-                    <input type="number" id="height" placeholder="Boy (cm)" class="w-full p-4 border border-gray-100 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-green-400 focus:outline-none transition">
-                    <input type="number" id="weight" placeholder="Kilo (kg)" class="w-full p-4 border border-gray-100 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-green-400 focus:outline-none transition">
+            <div id="register-fields" class="hidden space-y-4 mb-4">
+                <input type="text" id="fullname" placeholder="Ad Soyad" class="w-full p-4 rounded-xl bg-fscard text-white border border-gray-800 placeholder-gray-600 focus:ring-1 focus:ring-fsgreen transition">
+                <div class="flex gap-4">
+                    <input type="number" id="height" placeholder="Boy (cm)" class="w-full p-4 rounded-xl bg-fscard text-white border border-gray-800 placeholder-gray-600 focus:ring-1 focus:ring-fsgreen transition">
+                    <input type="number" id="weight" placeholder="Kilo (kg)" class="w-full p-4 rounded-xl bg-fscard text-white border border-gray-800 placeholder-gray-600 focus:ring-1 focus:ring-fsgreen transition">
                 </div>
             </div>
 
-            <input type="email" id="email" placeholder="E-posta" class="w-full p-4 mb-4 border border-gray-100 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-green-400 focus:outline-none transition">
-            <input type="password" id="password" placeholder="Şifre" class="w-full p-4 mb-6 border border-gray-100 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-green-400 focus:outline-none transition">
+            <div class="space-y-4 mb-8">
+                <input type="email" id="email" placeholder="E-posta Adresi" class="w-full p-4 rounded-xl bg-fscard text-white border border-gray-800 placeholder-gray-600 focus:ring-1 focus:ring-fsgreen transition">
+                <input type="password" id="password" placeholder="Şifre" class="w-full p-4 rounded-xl bg-fscard text-white border border-gray-800 placeholder-gray-600 focus:ring-1 focus:ring-fsgreen transition">
+            </div>
             
-            <button id="auth-btn" onclick="handleAuth()" class="w-full bg-gradient-to-r from-green-500 to-green-600 text-white font-black py-4 rounded-xl hover:shadow-lg transition transform hover:-translate-y-1">GİRİŞ YAP</button>
-            <button type="button" class="mt-5 text-sm text-center text-green-600 dark:text-green-400 font-bold cursor-pointer hover:underline w-full" onclick="toggleAuth()" id="toggle-link">Hesabın yok mu? Yeni Hesap Oluştur</button>
+            <button id="auth-btn" onclick="handleAuth()" class="w-full bg-fsgreen text-black font-black py-4 rounded-xl hover:bg-green-400 transition shadow-[0_0_15px_rgba(36,209,100,0.3)]">GİRİŞ YAP</button>
+            <button type="button" class="mt-6 text-sm text-center text-fsmuted font-bold hover:text-white w-full transition" onclick="toggleAuth()" id="toggle-link">Hesabın yok mu? Yeni Hesap Oluştur</button>
         </div>
 
         <div id="dashboard-section" class="hidden flex-1 flex flex-col overflow-hidden">
-            <div class="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 p-4 flex justify-between items-center shadow-sm z-10 transition-colors duration-500">
+            
+            <div class="bg-fsbg p-5 flex justify-between items-center z-10 sticky top-0">
                 <div class="flex items-center gap-3">
-                    <div class="bg-gradient-to-tr from-green-400 to-green-600 w-10 h-10 rounded-full flex items-center justify-center shadow-md">
-                        <i class="fa-solid fa-leaf text-white text-lg"></i>
+                    <div class="bg-fscard w-10 h-10 rounded-full flex items-center justify-center border border-gray-800">
+                        <i class="fa-solid fa-leaf text-fsgreen text-lg"></i>
                     </div>
-                    <span class="font-black text-2xl text-gray-800 dark:text-white tracking-tight">FlexiFit</span>
+                    <div>
+                        <span class="font-black text-xl text-white tracking-tight">FlexiFit</span>
+                    </div>
                 </div>
-                <button onclick="logout()" class="text-gray-400 dark:text-gray-500 hover:text-red-500 transition p-2"><i class="fa-solid fa-right-from-bracket text-xl"></i></button>
+                <div class="flex gap-4">
+                    <button class="text-fsmuted hover:text-white transition"><i class="fa-regular fa-bell text-xl"></i></button>
+                    <button onclick="logout()" class="text-fsmuted hover:text-red-500 transition"><i class="fa-solid fa-arrow-right-from-bracket text-xl"></i></button>
+                </div>
             </div>
 
-            <div id="content" class="flex-1 p-4 overflow-y-auto pb-24 bg-gray-50 dark:bg-gray-900 transition-colors duration-500">
+            <div id="content" class="flex-1 p-4 overflow-y-auto pb-24">
                 
                 <div id="tab-home">
-                    <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-3xl p-6 text-white mb-6 shadow-xl relative overflow-hidden">
-                        <p class="opacity-90 text-sm font-medium">Hoş geldin,</p>
-                        <h2 id="home-name" class="text-3xl font-black mb-3">Kullanıcı</h2>
-                        <div class="mt-2">
-                            <p class="text-[10px] uppercase opacity-90 font-bold tracking-widest mb-1">Günlük Kalori Durumu</p>
-                            <p id="home-cal-summary" class="text-xl font-black bg-white/20 px-3 py-1 rounded-lg inline-block shadow-inner tracking-wide">0 / 2000 kcal</p>
+                    <h3 class="text-white font-black text-2xl mb-4">Bugün</h3>
+                    
+                    <div class="bg-fscard rounded-3xl p-6 text-white mb-6 border border-gray-800 relative overflow-hidden">
+                        <p class="text-fsmuted text-sm font-medium mb-1">Hoş geldin,</p>
+                        <h2 id="home-name" class="text-3xl font-black mb-4">Kullanıcı</h2>
+                        
+                        <div class="flex items-end justify-between">
+                            <div>
+                                <p class="text-[10px] uppercase text-fsmuted font-bold tracking-widest mb-1">Günlük Kalori</p>
+                                <p id="home-cal-summary" class="text-xl font-black text-fsgreen">0 / 2000 kcal</p>
+                            </div>
+                            <i class="fa-solid fa-fire text-6xl text-gray-800 absolute -bottom-2 -right-2"></i>
                         </div>
-                        <i class="fa-solid fa-fire text-8xl opacity-10 absolute -bottom-4 -right-4 transform rotate-12"></i>
                     </div>
                     
                     <div class="grid grid-cols-2 gap-4 mb-6">
-                        <div class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm p-5 rounded-3xl text-center">
-                            <p id="home-bmi" class="font-black text-3xl text-blue-500 mb-1">24.5</p>
-                            <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest">Vücut İndeksi</p>
+                        <div class="bg-fscard border border-gray-800 p-5 rounded-3xl text-center">
+                            <p id="home-bmi" class="font-black text-3xl text-white mb-1">24.5</p>
+                            <p class="text-[10px] text-fsmuted uppercase font-black tracking-widest">Vücut İndeksi</p>
                         </div>
-                        <div class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm p-5 rounded-3xl text-center">
-                            <i class="fa-solid fa-shoe-prints text-orange-400 mb-2 text-3xl"></i>
-                            <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest">Adım Sayısı</p>
-                            <p class="font-bold text-xl text-gray-800 dark:text-white">6,400</p>
+                        <div class="bg-fscard border border-gray-800 p-5 rounded-3xl text-center">
+                            <i class="fa-solid fa-shoe-prints text-fsmuted mb-2 text-2xl"></i>
+                            <p class="text-[10px] text-fsmuted uppercase font-black tracking-widest">Adım Sayısı</p>
+                            <p class="font-bold text-xl text-white">6,400</p>
                         </div>
                     </div>
 
-                    <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 mb-4 transition-colors duration-500">
+                    <div class="bg-fscard p-5 rounded-3xl border border-gray-800 mb-4">
                         <div class="flex items-center justify-between mb-4">
-                            <h3 class="font-bold text-gray-800 dark:text-white"><i class="fa-solid fa-chart-column text-green-500 mr-2"></i>Haftalık Özet</h3>
-                            <button onclick="renderWeeklyChart()" class="text-xs text-blue-500 hover:underline"><i class="fa-solid fa-rotate-right"></i> Yenile</button>
+                            <h3 class="font-bold text-white"><i class="fa-solid fa-chart-simple text-fsgreen mr-2"></i>Haftalık Özet</h3>
                         </div>
                         <div class="relative h-48 w-full">
                             <canvas id="calorieChart"></canvas>
@@ -106,106 +125,155 @@
                 </div>
 
                 <div id="tab-diet" class="hidden">
-                    <h3 class="font-bold text-xl mb-4 text-gray-800 dark:text-white"><i class="fa-solid fa-chart-pie text-green-500 mr-2"></i>Kalori Takibi</h3>
                     
-                    <div class="mb-4 bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 text-center relative overflow-hidden transition-colors duration-500">
-                        <p class="text-[10px] text-gray-400 font-bold uppercase mb-1 tracking-widest">Günlük Hedef</p>
-                        <div class="flex justify-center items-baseline gap-2 mb-4">
-                            <span id="cal-consumed" class="text-5xl font-black text-green-500 transition-colors duration-300">0</span>
-                            <span class="text-gray-400 font-medium text-lg">/ <span id="cal-goal">2000</span> kcal</span>
-                        </div>
-                        <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-4 mb-3 shadow-inner overflow-hidden">
-                            <div id="cal-progress" class="bg-gradient-to-r from-green-400 to-green-500 h-4 rounded-full transition-all duration-700 ease-out" style="width: 0%"></div>
-                        </div>
-                        <p id="cal-remaining" class="text-xs font-bold text-gray-500 bg-gray-50 dark:bg-gray-700 dark:text-gray-300 border dark:border-gray-600 px-3 py-1.5 rounded-lg inline-block">Kalan: 2000 kcal</p>
+                    <div class="flex items-center justify-between mb-6">
+                        <button class="text-fsmuted"><i class="fa-solid fa-chevron-left"></i></button>
+                        <h3 class="font-bold text-lg text-white">Bu Hafta</h3>
+                        <button class="text-fsmuted"><i class="fa-solid fa-chevron-right"></i></button>
                     </div>
 
-                    <div class="flex gap-2 mb-4">
-                        <button id="barcode-btn" onclick="scanBarcode()" class="flex-1 bg-gray-800 dark:bg-gray-700 text-white p-3 rounded-xl font-bold hover:bg-black transition shadow-md flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-barcode text-xl"></i> Barkod Okut
+                    <div class="flex items-center justify-between bg-fscard p-6 rounded-2xl mb-6 border border-gray-800">
+                        <div>
+                            <p class="text-fsmuted font-bold text-sm mb-1">Kalan Kalori</p>
+                            <p class="text-fsmuted font-bold text-sm">Alınan Kalori</p>
+                        </div>
+                        <div class="text-right">
+                            <p id="cal-remaining" class="text-3xl font-black text-white mb-1">2000</p>
+                            <p id="cal-consumed" class="text-xl font-black text-fsgreen">0</p>
+                        </div>
+                    </div>
+
+                    <div id="cal-progress" class="hidden"></div>
+                    <div id="cal-goal" class="hidden">2000</div>
+
+                    <div class="bg-fscard rounded-2xl border border-gray-800 mb-6 overflow-hidden">
+                        <div class="p-4 border-b border-gray-800 flex gap-2 items-center">
+                            <input type="text" id="food-name" placeholder="Öğün ara veya gir..." class="flex-1 bg-transparent text-white focus:outline-none placeholder-gray-600 font-medium text-sm">
+                            <input type="number" id="food-cal" placeholder="Kcal" class="w-16 bg-transparent text-white focus:outline-none placeholder-gray-600 font-black text-center text-sm border-l border-gray-800 pl-2">
+                            <button onclick="addFood()" class="text-fsgreen ml-2 hover:text-green-400 transition"><i class="fa-solid fa-plus text-2xl"></i></button>
+                        </div>
+                        <button id="barcode-btn" onclick="scanBarcode()" class="w-full p-4 flex items-center justify-center gap-2 text-fsmuted hover:text-white transition bg-[#0d1323]">
+                            <i class="fa-solid fa-barcode"></i> Barkod ile Tarat
                         </button>
                     </div>
-
-                    <div class="flex gap-2 mb-6 bg-white dark:bg-gray-800 p-2 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 focus-within:ring-2 focus-within:ring-green-400 transition-colors duration-500">
-                        <input type="text" id="food-name" placeholder="Manuel öğün gir..." class="flex-1 p-2 bg-transparent border-none focus:outline-none text-gray-700 dark:text-white font-medium text-sm">
-                        <div class="w-px bg-gray-200 dark:bg-gray-700 my-1"></div>
-                        <input type="number" id="food-cal" placeholder="Kcal" class="w-20 p-2 bg-transparent border-none focus:outline-none text-gray-800 dark:text-white font-black text-center text-sm">
-                        <button onclick="addFood()" class="bg-green-500 text-white w-12 rounded-lg font-bold hover:bg-green-600 transition shadow flex items-center justify-center"><i class="fa-solid fa-plus text-lg"></i></button>
-                    </div>
                     
-                    <h4 class="text-[10px] font-bold text-gray-400 mb-3 uppercase tracking-widest">Bugün Tüketilenler</h4>
-                    <div id="food-list" class="space-y-3 pb-4"></div>
+                    <div class="flex items-center justify-between mb-3 px-2">
+                        <h4 class="text-xs font-bold text-fsmuted uppercase tracking-widest">Tüketilenler</h4>
+                        <span class="text-xs text-fsmuted">Kcal</span>
+                    </div>
+                    <div id="food-list" class="space-y-2 pb-4"></div>
                 </div>
 
                 <div id="tab-ai" class="hidden">
-                    <div class="text-center py-6">
-                        <div class="inline-block p-6 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-gray-800 rounded-full mb-6 shadow-inner border border-blue-200 dark:border-blue-700 relative">
-                            <i class="fa-solid fa-robot text-6xl text-blue-500 animate-bounce"></i>
+                    <div class="text-center py-10">
+                        <div class="inline-block p-8 bg-fscard rounded-full mb-6 border border-gray-800 shadow-2xl relative">
+                            <i class="fa-solid fa-robot text-7xl text-fsgreen animate-pulse"></i>
                         </div>
-                        <h3 class="font-black text-2xl mb-2 text-gray-800 dark:text-white">AI Antrenör</h3>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 px-6 font-medium">Sana özel tavsiyeler üretmek için buradayım.</p>
+                        <h3 class="font-black text-2xl mb-2 text-white">AI Antrenör</h3>
+                        <p class="text-sm text-fsmuted px-6 font-medium">Sana özel tavsiyeler üretmek için hazırım.</p>
                         
-                        <button onclick="generateAIAdvice()" class="mt-8 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition transform hover:-translate-y-1"><i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Anlık Analiz Yap</button>
+                        <button onclick="generateAIAdvice()" class="mt-8 bg-fscard border border-gray-700 text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:border-fsgreen transition flex items-center justify-center gap-3 w-full max-w-xs mx-auto"><i class="fa-solid fa-wand-magic-sparkles text-fsgreen"></i> Analiz Yap</button>
                         
-                        <div id="ai-chat-result" class="mt-8 hidden bg-white dark:bg-gray-800 p-6 rounded-2xl text-left text-gray-800 dark:text-white border-l-4 border-blue-500 shadow-md transition-colors duration-500"></div>
+                        <div id="ai-chat-result" class="mt-8 hidden bg-fscard p-6 rounded-2xl text-left text-fstext border-l-4 border-fsgreen shadow-md"></div>
                     </div>
                 </div>
 
-                <div id="tab-profile" class="hidden text-left">
-                    <h3 class="font-bold text-xl mb-4 text-gray-800 dark:text-white"><i class="fa-solid fa-user-gear text-blue-500 mr-2"></i>Ayarlar</h3>
-                    
-                    <div class="bg-white dark:bg-gray-800 p-5 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm mb-4 transition-colors duration-500">
-                        <h4 class="text-[10px] font-black text-green-500 uppercase tracking-widest mb-4 border-b dark:border-gray-700 pb-2"><i class="fa-solid fa-ruler-vertical mr-1"></i> Fiziksel Ölçümler</h4>
-                        <div class="space-y-4">
+                <div id="tab-profile" class="hidden">
+                    <div class="flex items-center justify-between mb-6 px-2">
+                        <button class="text-fsmuted text-xl"><i class="fa-solid fa-arrow-left"></i></button>
+                        <h3 class="font-bold text-lg text-white">Hesap Yönetimi</h3>
+                        <div class="w-5"></div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 mb-8">
+                        <div class="bg-fscard p-4 rounded-xl border border-gray-800 flex items-center gap-3">
+                            <div class="bg-[#1e293b] p-2 rounded-lg text-fsmuted"><i class="fa-solid fa-utensils"></i></div>
                             <div>
-                                <label class="text-xs font-bold text-gray-400">Ad Soyad</label>
-                                <input type="text" id="p-name" class="w-full p-2 border-b border-gray-100 dark:border-gray-700 bg-transparent focus:outline-none focus:border-green-500 text-gray-800 dark:text-white font-bold transition">
+                                <p class="text-white font-black">0 kal</p>
+                                <p class="text-[10px] text-fsmuted">Hedef</p>
                             </div>
-                            <div class="flex gap-4">
+                        </div>
+                        <div class="bg-fscard p-4 rounded-xl border border-gray-800 flex items-center gap-3">
+                            <div class="bg-[#1e293b] p-2 rounded-lg text-fsmuted"><i class="fa-solid fa-person-running"></i></div>
+                            <div>
+                                <p class="text-white font-black">0 kal</p>
+                                <p class="text-[10px] text-fsmuted">Yakılan</p>
+                            </div>
+                        </div>
+                        <div class="bg-fscard p-4 rounded-xl border border-gray-800 flex items-center justify-between col-span-2">
+                            <div class="flex items-center gap-3 w-full">
+                                <div class="bg-[#1e293b] p-2 rounded-lg text-fsmuted"><i class="fa-solid fa-weight-scale"></i></div>
                                 <div class="flex-1">
-                                    <label class="text-xs font-bold text-gray-400">Boy (cm)</label>
-                                    <input type="number" id="p-height" class="w-full p-2 border-b border-gray-100 dark:border-gray-700 bg-transparent focus:outline-none focus:border-green-500 text-gray-800 dark:text-white font-black transition">
+                                    <p class="text-[10px] text-fsmuted uppercase mb-1">Güncel Kilo</p>
+                                    <input type="number" id="p-weight" class="w-full bg-transparent text-white font-black text-xl focus:outline-none border-b border-gray-700 focus:border-fsgreen pb-1" placeholder="Kg girin">
                                 </div>
-                                <div class="flex-1">
-                                    <label class="text-xs font-bold text-gray-400">Kilo (kg)</label>
-                                    <input type="number" id="p-weight" class="w-full p-2 border-b border-gray-100 dark:border-gray-700 bg-transparent focus:outline-none focus:border-green-500 text-gray-800 dark:text-white font-black transition">
-                                </div>
+                                <i class="fa-solid fa-pen text-fsmuted text-sm"></i>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white dark:bg-gray-800 p-5 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm mb-6 transition-colors duration-500">
-                        <h4 class="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-4 border-b dark:border-gray-700 pb-2"><i class="fa-solid fa-sliders mr-1"></i> Uygulama Tercihleri</h4>
+                    <h4 class="text-[11px] font-black text-fsmuted uppercase tracking-widest mb-2 ml-2">GÜNLÜK HEDEFLER</h4>
+                    <div class="bg-fscard rounded-xl border border-gray-800 overflow-hidden mb-6">
                         
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center gap-3 text-gray-700 dark:text-white font-bold text-sm"><i class="fa-solid fa-moon text-indigo-500"></i> Karanlık Mod</div>
-                            <button onclick="toggleDarkMode()" class="w-12 h-6 bg-gray-200 dark:bg-green-500 rounded-full relative transition-colors duration-300 focus:outline-none">
-                                <div id="dark-mode-dot" class="w-5 h-5 bg-white rounded-full absolute left-0.5 top-0.5 shadow-md transform transition-transform duration-300 dark:translate-x-6"></div>
-                            </button>
+                        <div class="p-4 border-b border-gray-800 flex justify-between items-center group cursor-pointer">
+                            <div>
+                                <p class="text-white font-bold text-sm">Hedef Kilo (kg)</p>
+                                <input type="number" id="p-goal" placeholder="Hedef girin" class="bg-transparent text-fsgreen font-bold text-sm mt-1 focus:outline-none w-24">
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-fsmuted text-xs group-hover:text-white transition"></i>
+                        </div>
+
+                        <div class="p-4 border-b border-gray-800 flex justify-between items-center group cursor-pointer">
+                            <div>
+                                <p class="text-white font-bold text-sm">Boy (cm)</p>
+                                <input type="number" id="p-height" placeholder="Boy girin" class="bg-transparent text-fsgreen font-bold text-sm mt-1 focus:outline-none w-24">
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-fsmuted text-xs group-hover:text-white transition"></i>
+                        </div>
+
+                        <div class="p-4 flex justify-between items-center group cursor-pointer">
+                            <div class="w-full">
+                                <p class="text-white font-bold text-sm mb-1">Aktivite Seviyesi</p>
+                                <select id="p-activity" class="bg-transparent text-fsgreen font-bold text-sm focus:outline-none w-full appearance-none cursor-pointer">
+                                    <option value="1.2" class="bg-gray-800">Masa başı / Hareketsiz</option>
+                                    <option value="1.55" selected class="bg-gray-800">Orta Egzersiz (3-5 gün)</option>
+                                    <option value="1.725" class="bg-gray-800">Ağır Egzersiz (6-7 gün)</option>
+                                </select>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-fsmuted text-xs group-hover:text-white transition"></i>
                         </div>
                     </div>
 
-                    <button onclick="updateProfile()" class="w-full bg-gray-900 dark:bg-white dark:text-gray-900 text-white py-4 rounded-2xl font-black hover:bg-black transition shadow-lg mb-4"><i class="fa-solid fa-floppy-disk mr-2"></i> Değişiklikleri Kaydet</button>
-                    <p class="text-center text-xs text-gray-400 font-bold mt-4 mb-2">FlexiFit Pro v1.0.7</p>
+                    <button onclick="updateProfile()" class="w-full bg-fsgreen text-black py-4 rounded-xl font-black hover:bg-green-400 transition shadow-lg mt-4 mb-8">
+                        Değişiklikleri Kaydet
+                    </button>
+                    
+                    <p class="text-center text-xs text-gray-700 font-bold mt-4 mb-2">FlexiFit Pro v2.0</p>
                 </div>
 
             </div>
 
-            <div class="bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 absolute bottom-0 w-full h-[70px] flex justify-around items-center shadow-[0_-10px_30px_rgba(0,0,0,0.05)] z-20 rounded-b-[2.5rem] transition-colors duration-500">
-                <button onclick="switchTab('home')" id="nav-home" class="flex flex-col items-center tab-active w-1/4 py-1 transition transform hover:scale-110"><i class="fa-solid fa-house text-xl mb-1"></i><span class="text-[10px] font-bold">Özet</span></button>
-                <button onclick="switchTab('diet')" id="nav-diet" class="flex flex-col items-center text-gray-400 dark:text-gray-500 w-1/4 py-1 transition transform hover:scale-110 hover:text-green-500"><i class="fa-solid fa-utensils text-xl mb-1"></i><span class="text-[10px] font-bold">Kalori</span></button>
-                <button onclick="switchTab('ai')" id="nav-ai" class="flex flex-col items-center text-gray-400 dark:text-gray-500 w-1/4 py-1 transition transform hover:scale-110 hover:text-green-500"><i class="fa-solid fa-brain text-xl mb-1"></i><span class="text-[10px] font-bold">AI Coach</span></button>
-                <button onclick="switchTab('profile')" id="nav-profile" class="flex flex-col items-center text-gray-400 dark:text-gray-500 w-1/4 py-1 transition transform hover:scale-110 hover:text-green-500"><i class="fa-solid fa-user text-xl mb-1"></i><span class="text-[10px] font-bold">Profil</span></button>
+            <div class="bg-[#0B101E] border-t border-gray-800 absolute bottom-0 w-full h-[70px] flex justify-around items-center z-20 pb-2 pt-1">
+                <button onclick="switchTab('home')" id="nav-home" class="flex flex-col items-center tab-active text-fsmuted w-1/4 transition">
+                    <i class="fa-solid fa-chart-line text-2xl mb-1"></i>
+                    <span class="text-[10px] font-bold">Özet</span>
+                </button>
+                <button onclick="switchTab('diet')" id="nav-diet" class="flex flex-col items-center text-fsmuted w-1/4 transition hover:text-white">
+                    <i class="fa-solid fa-utensils text-2xl mb-1"></i>
+                    <span class="text-[10px] font-bold">Günlük</span>
+                </button>
+                <button onclick="switchTab('ai')" id="nav-ai" class="flex flex-col items-center text-fsmuted w-1/4 transition hover:text-white">
+                    <i class="fa-solid fa-robot text-2xl mb-1"></i>
+                    <span class="text-[10px] font-bold">AI Coach</span>
+                </button>
+                <button onclick="switchTab('profile')" id="nav-profile" class="flex flex-col items-center text-fsmuted w-1/4 transition hover:text-white">
+                    <i class="fa-solid fa-user text-2xl mb-1"></i>
+                    <span class="text-[10px] font-bold">Ben</span>
+                </button>
             </div>
         </div>
     </div>
     
-    <script src="app.js?v=7"></script>
-    <script>
-        // DARK MODE'U SAYFA AÇILIR AÇILMAZ KONTROL ET
-        if (localStorage.getItem('theme') === 'dark') {
-            document.documentElement.classList.add('dark');
-        }
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
