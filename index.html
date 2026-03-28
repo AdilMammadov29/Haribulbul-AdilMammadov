@@ -174,15 +174,31 @@
 
                 <div id="tab-profile" class="hidden">
                     <div class="flex items-center gap-3 mb-6">
-                        <div class="bg-fscard w-16 h-16 rounded-full flex items-center justify-center border border-gray-800 text-fsgreen"><i class="fa-solid fa-user text-2xl"></i></div>
+                        <div class="bg-fscard w-16 h-16 rounded-full flex items-center justify-center border border-gray-800 text-fsgreen">
+                            <i class="fa-solid fa-user text-2xl"></i>
+                        </div>
                         <div>
                             <h3 id="top-bar-name" class="font-bold text-white text-xl">Flexi Kullanıcı</h3>
                             <p class="text-xs text-fsmuted">Premium Üye <i class="fa-solid fa-crown text-yellow-500 ml-1"></i></p>
                         </div>
                     </div>
 
-                    <h4 class="text-[11px] font-black text-white uppercase tracking-widest mb-2 ml-1">HESAP DETAYLARI</h4>
+                    <div class="bg-fscard p-4 rounded-xl border border-gray-800 mb-4 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-weight-scale text-fsmuted"></i>
+                            <input type="number" id="p-weight" class="w-20 bg-transparent text-white font-black text-lg focus:outline-none border-b border-gray-700 focus:border-fsgreen" placeholder="Kg">
+                        </div>
+                        <button onclick="updateProfile()" class="bg-[#1e293b] px-4 py-2 rounded-lg text-white font-bold text-xs border border-gray-700 hover:bg-gray-700 transition">
+                            Güncelle
+                        </button>
+                    </div>
+
+                    <h4 class="text-[11px] font-black text-white uppercase tracking-widest mb-2 ml-1 mt-6">HESAP DETAYLARI</h4>
                     <div class="bg-fscard rounded-xl border border-gray-800 overflow-hidden mb-6">
+                        <div class="p-4 border-b border-gray-800">
+                            <p class="text-white font-bold text-sm">Hesap Türü</p>
+                            <p class="text-fsgreen text-sm font-bold mt-1">Premium Üye <i class="fa-solid fa-crown text-yellow-500 ml-1"></i></p>
+                        </div>
                         <div class="p-4 border-b border-gray-800">
                             <p class="text-white font-bold text-sm">Email</p>
                             <p id="prof-email" class="text-fsmuted text-xs mt-1">kullanici@gmail.com</p>
