@@ -13,11 +13,11 @@
             theme: {
                 extend: {
                     colors: {
-                        fsbg: '#0B101E', // FatSecret Arka Plan
-                        fscard: '#151C2C', // FatSecret Kartlar
-                        fsgreen: '#24D164', // FatSecret Yeşil
-                        fstext: '#E2E8F0', // Açık Gri Metin
-                        fsmuted: '#64748B' // Koyu Gri İkon/Metin
+                        fsbg: '#0B101E', 
+                        fscard: '#151C2C', 
+                        fsgreen: '#24D164', 
+                        fstext: '#E2E8F0', 
+                        fsmuted: '#64748B' 
                     }
                 }
             }
@@ -26,14 +26,13 @@
     <style>
         body { background-color: #000; color: #E2E8F0; }
         .hidden { display: none !important; }
-        /* FatSecret Bottom Nav Aktif Rengi */
         .tab-active { color: #24D164 !important; }
-        
-        /* Şık Scrollbar */
         ::-webkit-scrollbar { width: 0px; }
-        
-        /* Input focus olduğunda kenarlık rengi */
         input:focus, select:focus { outline: none; border-color: #24D164 !important; }
+        
+        /* Şık Toggle (Aç/Kapat) Switch Tasarımı */
+        .toggle-checkbox:checked { right: 0; border-color: #24D164; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #24D164; }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen font-sans">
@@ -88,11 +87,9 @@
                 
                 <div id="tab-home">
                     <h3 class="text-white font-black text-2xl mb-4">Bugün</h3>
-                    
                     <div class="bg-fscard rounded-3xl p-6 text-white mb-6 border border-gray-800 relative overflow-hidden">
                         <p class="text-fsmuted text-sm font-medium mb-1">Hoş geldin,</p>
                         <h2 id="home-name" class="text-3xl font-black mb-4">Kullanıcı</h2>
-                        
                         <div class="flex items-end justify-between">
                             <div>
                                 <p class="text-[10px] uppercase text-fsmuted font-bold tracking-widest mb-1">Günlük Kalori</p>
@@ -125,7 +122,6 @@
                 </div>
 
                 <div id="tab-diet" class="hidden">
-                    
                     <div class="flex items-center justify-between mb-6">
                         <button class="text-fsmuted"><i class="fa-solid fa-chevron-left"></i></button>
                         <h3 class="font-bold text-lg text-white">Bu Hafta</h3>
@@ -171,84 +167,144 @@
                         </div>
                         <h3 class="font-black text-2xl mb-2 text-white">AI Antrenör</h3>
                         <p class="text-sm text-fsmuted px-6 font-medium">Sana özel tavsiyeler üretmek için hazırım.</p>
-                        
                         <button onclick="generateAIAdvice()" class="mt-8 bg-fscard border border-gray-700 text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:border-fsgreen transition flex items-center justify-center gap-3 w-full max-w-xs mx-auto"><i class="fa-solid fa-wand-magic-sparkles text-fsgreen"></i> Analiz Yap</button>
-                        
                         <div id="ai-chat-result" class="mt-8 hidden bg-fscard p-6 rounded-2xl text-left text-fstext border-l-4 border-fsgreen shadow-md"></div>
                     </div>
                 </div>
 
                 <div id="tab-profile" class="hidden">
-                    <div class="flex items-center justify-between mb-6 px-2">
-                        <button class="text-fsmuted text-xl"><i class="fa-solid fa-arrow-left"></i></button>
-                        <h3 class="font-bold text-lg text-white">Hesap Yönetimi</h3>
-                        <div class="w-5"></div>
+                    
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-fscard w-12 h-12 rounded-full flex items-center justify-center border border-gray-800 text-fsgreen">
+                                <i class="fa-solid fa-user text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-white text-lg">Flexi Kullanıcı</h3>
+                                <p class="text-xs text-fsmuted">Hesap Türü: Ücretsiz</p>
+                            </div>
+                        </div>
+                        <button class="bg-[#1e293b] w-10 h-10 rounded-full flex items-center justify-center text-white hover:bg-gray-700 transition">
+                            <i class="fa-solid fa-gear"></i>
+                        </button>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3 mb-8">
-                        <div class="bg-fscard p-4 rounded-xl border border-gray-800 flex items-center gap-3">
-                            <div class="bg-[#1e293b] p-2 rounded-lg text-fsmuted"><i class="fa-solid fa-utensils"></i></div>
-                            <div>
-                                <p class="text-white font-black">0 kal</p>
-                                <p class="text-[10px] text-fsmuted">Hedef</p>
-                            </div>
+                    <div class="grid grid-cols-2 gap-3 mb-6">
+                        <div class="bg-fscard py-3 rounded-xl border border-gray-800 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-utensils text-fsmuted"></i>
+                            <span class="text-white font-black text-sm">0 kal</span>
                         </div>
-                        <div class="bg-fscard p-4 rounded-xl border border-gray-800 flex items-center gap-3">
-                            <div class="bg-[#1e293b] p-2 rounded-lg text-fsmuted"><i class="fa-solid fa-person-running"></i></div>
-                            <div>
-                                <p class="text-white font-black">0 kal</p>
-                                <p class="text-[10px] text-fsmuted">Yakılan</p>
-                            </div>
+                        <div class="bg-fscard py-3 rounded-xl border border-gray-800 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-person-running text-fsmuted"></i>
+                            <span class="text-white font-black text-sm">0 kal</span>
                         </div>
-                        <div class="bg-fscard p-4 rounded-xl border border-gray-800 flex items-center justify-between col-span-2">
-                            <div class="flex items-center gap-3 w-full">
-                                <div class="bg-[#1e293b] p-2 rounded-lg text-fsmuted"><i class="fa-solid fa-weight-scale"></i></div>
-                                <div class="flex-1">
-                                    <p class="text-[10px] text-fsmuted uppercase mb-1">Güncel Kilo</p>
-                                    <input type="number" id="p-weight" class="w-full bg-transparent text-white font-black text-xl focus:outline-none border-b border-gray-700 focus:border-fsgreen pb-1" placeholder="Kg girin">
-                                </div>
-                                <i class="fa-solid fa-pen text-fsmuted text-sm"></i>
-                            </div>
+                        <div class="bg-fscard py-3 rounded-xl border border-gray-800 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-weight-scale text-fsmuted"></i>
+                            <input type="number" id="p-weight" class="w-14 bg-transparent text-white font-black text-sm focus:outline-none text-center" placeholder="94 kg">
+                        </div>
+                        <div class="bg-fscard py-3 rounded-xl border border-gray-800 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-camera text-fsmuted"></i>
+                            <i class="fa-solid fa-pen text-fsmuted text-xs ml-2"></i>
                         </div>
                     </div>
 
-                    <h4 class="text-[11px] font-black text-fsmuted uppercase tracking-widest mb-2 ml-2">GÜNLÜK HEDEFLER</h4>
+                    <button onclick="updateProfile()" class="w-full bg-[#1e293b] text-white py-3 rounded-xl font-bold border border-gray-700 mb-8 hover:bg-gray-700 transition text-sm">
+                        Kilomu Güncelle
+                    </button>
+
+                    <h4 class="text-[11px] font-black text-white uppercase tracking-widest mb-2 ml-1">HESAP DETAYLARI</h4>
                     <div class="bg-fscard rounded-xl border border-gray-800 overflow-hidden mb-6">
-                        
-                        <div class="p-4 border-b border-gray-800 flex justify-between items-center group cursor-pointer">
-                            <div>
-                                <p class="text-white font-bold text-sm">Hedef Kilo (kg)</p>
-                                <input type="number" id="p-goal" placeholder="Hedef girin" class="bg-transparent text-fsgreen font-bold text-sm mt-1 focus:outline-none w-24">
-                            </div>
-                            <i class="fa-solid fa-chevron-right text-fsmuted text-xs group-hover:text-white transition"></i>
+                        <div class="p-4 border-b border-gray-800">
+                            <p class="text-white font-bold text-sm">Hesap Türü</p>
+                            <p class="text-fsmuted text-xs mt-1">Ücretsiz</p>
                         </div>
-
-                        <div class="p-4 border-b border-gray-800 flex justify-between items-center group cursor-pointer">
-                            <div>
-                                <p class="text-white font-bold text-sm">Boy (cm)</p>
-                                <input type="number" id="p-height" placeholder="Boy girin" class="bg-transparent text-fsgreen font-bold text-sm mt-1 focus:outline-none w-24">
-                            </div>
-                            <i class="fa-solid fa-chevron-right text-fsmuted text-xs group-hover:text-white transition"></i>
+                        <div class="p-4 border-b border-gray-800">
+                            <p class="text-white font-bold text-sm">Email</p>
+                            <p class="text-fsmuted text-xs mt-1">kullanici@gmail.com</p>
                         </div>
-
-                        <div class="p-4 flex justify-between items-center group cursor-pointer">
-                            <div class="w-full">
-                                <p class="text-white font-bold text-sm mb-1">Aktivite Seviyesi</p>
-                                <select id="p-activity" class="bg-transparent text-fsgreen font-bold text-sm focus:outline-none w-full appearance-none cursor-pointer">
-                                    <option value="1.2" class="bg-gray-800">Masa başı / Hareketsiz</option>
-                                    <option value="1.55" selected class="bg-gray-800">Orta Egzersiz (3-5 gün)</option>
-                                    <option value="1.725" class="bg-gray-800">Ağır Egzersiz (6-7 gün)</option>
-                                </select>
+                        <div class="p-4 border-b border-gray-800 flex justify-between items-center cursor-pointer">
+                            <div>
+                                <p class="text-white font-bold text-sm">Üye İsmi</p>
+                                <p class="text-fsmuted text-xs mt-1">Herkese açık (Toplulukta görünür)</p>
+                                <p class="text-fsgreen text-sm font-bold mt-1">flexi_user</p>
                             </div>
-                            <i class="fa-solid fa-chevron-right text-fsmuted text-xs group-hover:text-white transition"></i>
+                            <i class="fa-solid fa-chevron-right text-fsmuted text-xs"></i>
+                        </div>
+                        <div class="p-4 flex justify-between items-center cursor-pointer">
+                            <p class="text-white font-bold text-sm">Hesabı Sil</p>
+                            <i class="fa-solid fa-chevron-right text-fsmuted text-xs"></i>
                         </div>
                     </div>
 
-                    <button onclick="updateProfile()" class="w-full bg-fsgreen text-black py-4 rounded-xl font-black hover:bg-green-400 transition shadow-lg mt-4 mb-8">
-                        Değişiklikleri Kaydet
+                    <h4 class="text-[11px] font-black text-white uppercase tracking-widest mb-2 ml-1">TERCİHLER</h4>
+                    <div class="bg-fscard rounded-xl border border-gray-800 overflow-hidden mb-6">
+                        <div class="p-4 border-b border-gray-800 flex justify-between items-center cursor-pointer">
+                            <div>
+                                <p class="text-white font-bold text-sm">Bölge</p>
+                                <p class="text-fsgreen text-sm font-bold mt-1">Türkiye</p>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-fsmuted text-xs"></i>
+                        </div>
+                        <div class="p-4 border-b border-gray-800 flex justify-between items-center cursor-pointer">
+                            <div>
+                                <p class="text-white font-bold text-sm">Uygulama Dili</p>
+                                <p class="text-fsgreen text-sm font-bold mt-1">Türkçe</p>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-fsmuted text-xs"></i>
+                        </div>
+                        <div class="p-4 flex justify-between items-center cursor-pointer">
+                            <div>
+                                <p class="text-white font-bold text-sm">Cihazı Eşleştir</p>
+                                <p class="text-fsgreen text-sm font-bold mt-1">Akıllı Saat Bağlantısı</p>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-fsmuted text-xs"></i>
+                        </div>
+                    </div>
+
+                    <h4 class="text-[11px] font-black text-white uppercase tracking-widest mb-2 ml-1">GÜNLÜK</h4>
+                    <div class="bg-fscard rounded-xl border border-gray-800 overflow-hidden mb-6">
+                        <div class="p-4 border-b border-gray-800 flex justify-between items-center cursor-pointer">
+                            <div>
+                                <p class="text-white font-bold text-sm">Enerji Birimi</p>
+                                <p class="text-fsgreen text-sm font-bold mt-1">Kalori</p>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-fsmuted text-xs"></i>
+                        </div>
+                        <div class="p-4 border-b border-gray-800 flex justify-between items-center cursor-pointer">
+                            <div>
+                                <p class="text-white font-bold text-sm">Ağırlık Birimi</p>
+                                <p class="text-fsgreen text-sm font-bold mt-1">Kilogram</p>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-fsmuted text-xs"></i>
+                        </div>
+                        <div class="p-4 border-b border-gray-800 flex justify-between items-center cursor-pointer">
+                            <div>
+                                <p class="text-white font-bold text-sm">TGD (Günlük Hedef)</p>
+                                <p class="text-fsgreen text-sm font-bold mt-1">2000 kalori</p>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-fsmuted text-xs"></i>
+                        </div>
+                        
+                        <div class="p-4 border-b border-gray-800 flex justify-between items-center">
+                            <p class="text-white font-bold text-sm">Rozet Bildirimleri</p>
+                            <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                                <input type="checkbox" name="toggle1" id="toggle1" checked class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-fsgreen right-0 z-10"/>
+                                <label for="toggle1" class="toggle-label block overflow-hidden h-5 rounded-full bg-fsgreen cursor-pointer"></label>
+                            </div>
+                        </div>
+                        <div class="p-4 flex justify-between items-center">
+                            <p class="text-white font-bold text-sm">Seri Gösterimi</p>
+                            <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                                <input type="checkbox" name="toggle2" id="toggle2" checked class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-fsgreen right-0 z-10"/>
+                                <label for="toggle2" class="toggle-label block overflow-hidden h-5 rounded-full bg-fsgreen cursor-pointer"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="w-full bg-fsgreen text-black py-4 rounded-xl font-black transition shadow-[0_0_15px_rgba(36,209,100,0.2)] mb-8 text-lg tracking-wide hover:bg-green-400">
+                        Premium'a geç
                     </button>
                     
-                    <p class="text-center text-xs text-gray-700 font-bold mt-4 mb-2">FlexiFit Pro v2.0</p>
                 </div>
 
             </div>
