@@ -1,28 +1,26 @@
 const API_URL = "https://flexifit-backend-thna.onrender.com";
 let isLoginMode = true;
-let myChart = null; // Grafik için gerekli değişken
+let myChart = null; 
 
 // ==========================================
-// 1. BAŞLANGIÇ AYARLARI (SAYFA YÜKLENDİĞİNDE)
+// 1. BAŞLANGIÇ AYARLARI 
 // ==========================================
 window.onload = function() {
-    // 1. Dark Mode Kontrolü
     if (localStorage.getItem('theme') === 'dark') {
         document.documentElement.classList.add('dark');
     }
     
-    // 2. Otomatik Giriş Kontrolü
     const savedEmail = localStorage.getItem("userEmail");
     if (savedEmail) {
         document.getElementById("auth-section").classList.add("hidden");
         document.getElementById("dashboard-section").classList.remove("hidden");
         loadHistory();
-        setTimeout(renderWeeklyChart, 500); // Sayfa açılınca grafiği çiz
+        setTimeout(renderWeeklyChart, 500); 
     }
 };
 
 // ==========================================
-// 2. GİRİŞ VE KAYIT SİSTEMİ
+// 2. GİRİŞ VE KAYIT
 // ==========================================
 function toggleAuth() {
     isLoginMode = !isLoginMode;
@@ -105,14 +103,11 @@ function switchTab(tab) {
     document.getElementById(`tab-${tab}`).classList.remove('hidden');
     document.getElementById(`nav-${tab}`).classList.add('tab-active');
 
-    // Eğer ana sayfaya dönüldüyse grafiği canlandır
-    if(tab === 'home') {
-        setTimeout(renderWeeklyChart, 100);
-    }
+    if(tab === 'home') setTimeout(renderWeeklyChart, 100);
 }
 
 // ==========================================
-// 4. BESİN TAKİBİ, BARKOD VE KALORİ
+// 4. BESİN TAKİBİ, BARKOD VE SİLME İŞLEMİ
 // ==========================================
 const foodDatabase = {
     "elma": 95, "muz": 105, "tavuk": 165, "makarna": 220, 
@@ -120,7 +115,6 @@ const foodDatabase = {
     "kebap": 350, "ayran": 40, "su": 0, "kahve": 2, "yulaf": 350
 };
 
-// Yazarken kaloriyi otomatik tahmin etme
 document.getElementById("food-name")?.addEventListener("input", function(e) {
     const input = e.target.value.toLowerCase().trim();
     const calInput = document.getElementById("food-cal");
@@ -181,6 +175,32 @@ async function addFood() {
     }
 }
 
+// --- YENİ EKLENEN SİLME FONKSİYONU ---
+async function deleteFood(foodName) {
+    const email = localStorage.getItem("userEmail");
+    if(!email) return;
+
+    if(!confirm(`"${foodName}" kaydını silmek istediğinize emin misiniz?`)) return;
+
+    try {
+        const res = await fetch(`${API_URL}/api/delete-food`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: email, food_name: foodName })
+        });
+
+        if(res.ok) {
+            loadHistory(); 
+            setTimeout(renderWeeklyChart, 200);
+        } else {
+            alert("Silme işlemi başarısız oldu.");
+        }
+    } catch (error) {
+        alert("Bağlantı hatası: Sunucuya ulaşılamadı.");
+    }
+}
+
+// --- LİSTE, ÇÖP KUTUSU VE BAR GÜNCELLEME ---
 async function loadHistory() {
     const email = localStorage.getItem("userEmail");
     const listEl = document.getElementById("food-list");
@@ -194,11 +214,10 @@ async function loadHistory() {
             listEl.innerHTML = ""; 
             let totalCalories = 0;
 
-            // Yemekleri topla ve listeye bas (Son eklenen en üste)
             data.slice().reverse().forEach(item => {
                 totalCalories += item.calories;
                 listEl.innerHTML += `
-                    <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex justify-between items-center mb-3">
+                    <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex justify-between items-center mb-3 group">
                         <div class="flex items-center gap-3">
                             <div class="bg-green-100 dark:bg-green-900 p-2 rounded-lg text-green-600 dark:text-green-400"><i class="fa-solid fa-utensils"></i></div>
                             <div>
@@ -206,12 +225,17 @@ async function loadHistory() {
                                 <p class="text-[10px] text-gray-400 font-bold uppercase">${item.date ? item.date.split(' ')[1].substring(0,5) : 'Şimdi'}</p>
                             </div>
                         </div>
-                        <span class="font-black text-green-500">${item.calories} kcal</span>
+                        
+                        <div class="flex items-center gap-4">
+                            <span class="font-black text-green-500">${item.calories} kcal</span>
+                            <button onclick="deleteFood('${item.name}')" class="text-gray-300 dark:text-gray-600 hover:text-red-500 transition" title="Bu öğünü sil">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
                     </div>
                 `;
             });
 
-            // BARI VE RAKAMLARI GÜNCELLE
             const goal = 2000; 
             const percent = Math.min((totalCalories / goal) * 100, 100);
             const remaining = Math.max(goal - totalCalories, 0);
@@ -253,8 +277,6 @@ async function generateAIAdvice() {
 // ==========================================
 // 6. ŞOV KISMI: GRAFİK, DARK MODE VE PROFİL
 // ==========================================
-
-// --- DARK MODE GEÇİŞİ ---
 function toggleDarkMode() {
     const htmlEl = document.documentElement;
     htmlEl.classList.toggle('dark'); 
@@ -262,20 +284,15 @@ function toggleDarkMode() {
     const isDark = htmlEl.classList.contains('dark');
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
     
-    // Tema değişince grafiği de güncelle
-    if(document.getElementById('calorieChart')) {
-        renderWeeklyChart(); 
-    }
+    if(document.getElementById('calorieChart')) renderWeeklyChart(); 
 }
 
-// --- HAFTALIK GRAFİK (CHART.JS) ---
 async function renderWeeklyChart() {
     const email = localStorage.getItem("userEmail");
     const ctx = document.getElementById('calorieChart');
     if(!ctx || !email) return;
 
     try {
-        // Senin Backend'deki endpoint'i kullanıyoruz!
         const res = await fetch(`${API_URL}/api/weekly-summary/${email}`);
         const data = await res.json(); 
 
@@ -285,7 +302,7 @@ async function renderWeeklyChart() {
         const isDark = document.documentElement.classList.contains('dark');
         const textColor = isDark ? '#e5e7eb' : '#374151';
 
-        if (myChart) myChart.destroy(); // Eski grafiği sil (üst üste binmemesi için)
+        if (myChart) myChart.destroy(); 
 
         myChart = new Chart(ctx, {
             type: 'bar',
@@ -313,7 +330,6 @@ async function renderWeeklyChart() {
     }
 }
 
-// --- PROFİL KAYDETME FONKSİYONU ---
 async function updateProfile() {
     const email = localStorage.getItem("userEmail");
     const newWeight = document.getElementById("p-weight").value;
