@@ -1,5 +1,5 @@
 # FlexiFit Pro - REST API Dokümantasyonu
-**YouTube Sunum Linki:** [BURAYA VİDEO LİNKİNİ YAPIŞTIR]
+**YouTube Sunum Linki:** [https://youtu.be/iUbSTOnaI1o?si=NcxtU7SOTj52N1f3]
 **Backend Domain:** https://flexifit-backend-thna.onrender.com
 
 ### API Metotları ve Gereksinim Eşleşmeleri
