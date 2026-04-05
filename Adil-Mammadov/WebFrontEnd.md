@@ -1,6 +1,6 @@
 # FlexiFit Pro - Web Frontend Dokümantasyonu
 **Canlı Uygulama Adresi:** https://haribulbul-adil-mammadov.vercel.app
-YouTube linki-
+YouTube linki-https://youtu.be/r1SFsMpZiC8
 
 ### Proje Detayları
 - **Teknolojiler:** HTML5, Tailwind CSS, Vanilla JavaScript.
